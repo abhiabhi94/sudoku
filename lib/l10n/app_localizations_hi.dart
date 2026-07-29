@@ -213,6 +213,18 @@ class AppLocalizationsHi extends AppLocalizations {
   String get notesSave => 'सहेजें';
 
   @override
+  String get notesTabText => 'लिखें';
+
+  @override
+  String get notesTabDraw => 'बनाएँ';
+
+  @override
+  String get notesUndo => 'पूर्ववत';
+
+  @override
+  String get notesClear => 'साफ़ करें';
+
+  @override
   String get victoryTitle => 'हल हो गया!';
 
   @override

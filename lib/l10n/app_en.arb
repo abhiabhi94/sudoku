@@ -78,6 +78,10 @@
   "notesTooltip": "Level notes",
   "notesPlaceholder": "Jot anything — candidates, reasoning, reminders…",
   "notesSave": "Save",
+  "notesTabText": "Text",
+  "notesTabDraw": "Draw",
+  "notesUndo": "Undo",
+  "notesClear": "Clear",
 
   "victoryTitle": "Solved it!",
   "victoryCheer": "You're on fire!",

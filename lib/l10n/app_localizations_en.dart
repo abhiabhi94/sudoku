@@ -213,6 +213,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notesSave => 'Save';
 
   @override
+  String get notesTabText => 'Text';
+
+  @override
+  String get notesTabDraw => 'Draw';
+
+  @override
+  String get notesUndo => 'Undo';
+
+  @override
+  String get notesClear => 'Clear';
+
+  @override
   String get victoryTitle => 'Solved it!';
 
   @override

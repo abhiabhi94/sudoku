@@ -76,6 +76,10 @@
   "notesTooltip": "लेवल नोट्स",
   "notesPlaceholder": "कुछ भी लिखें — संभावनाएँ, तर्क, याद रखने की बातें…",
   "notesSave": "सहेजें",
+  "notesTabText": "लिखें",
+  "notesTabDraw": "बनाएँ",
+  "notesUndo": "पूर्ववत",
+  "notesClear": "साफ़ करें",
 
   "victoryTitle": "हल हो गया!",
   "victoryCheer": "क्या बात है!",

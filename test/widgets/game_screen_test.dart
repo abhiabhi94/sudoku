@@ -158,7 +158,7 @@ void main() {
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
-    expect(container.read(levelNoteProvider(1)), 'box 4 needs a 9');
+    expect(container.read(levelNoteProvider(1)).text, 'box 4 needs a 9');
     // The app-bar icon now shows the "filled" note state.
     expect(find.byIcon(Icons.sticky_note_2_rounded), findsOneWidget);
   });

@@ -40,6 +40,12 @@ const Color cellErrorBg = Color(0xFFFFE2E2);
 const Color cellExplain = Color(0xFFFFF3D6);
 const Color cellExplainBorder = Color(0xFFFFD873);
 
+// Notes scratchpad — a warm "sticky note" paper tint, deliberately distinct
+// from the app's lavender/indigo palette so notes read as their own surface.
+const Color notesPaper = Color(0xFFFFF8E1);
+const Color notesPaperBorder = Color(0xFFF3E1A3);
+const Color notesInk = Color(0xFF4C4630); // strokes/text on the paper
+
 /// Per-tier signature colours (Beginner, Advanced, Expert).
 const List<Color> tierColors = <Color>[
   accentMint,

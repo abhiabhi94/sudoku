@@ -458,6 +458,30 @@ abstract class AppLocalizations {
   /// **'Save'**
   String get notesSave;
 
+  /// No description provided for @notesTabText.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get notesTabText;
+
+  /// No description provided for @notesTabDraw.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw'**
+  String get notesTabDraw;
+
+  /// No description provided for @notesUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get notesUndo;
+
+  /// No description provided for @notesClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get notesClear;
+
   /// No description provided for @victoryTitle.
   ///
   /// In en, this message translates to:
