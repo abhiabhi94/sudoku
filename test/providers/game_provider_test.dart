@@ -197,4 +197,54 @@ void main() {
     expect(n.state.mistakes, 0);
     expect(n.state.selectedIndex, -1);
   });
+
+  group('hint explanation', () {
+    test('applyHint attaches a "why here" explanation', () async {
+      final n = makeNotifier(blanks: const [0, 1]);
+      addTearDown(n.dispose);
+      await n.ready;
+
+      n.applyHint();
+      expect(n.state.lastHint, isNotNull);
+      expect(n.state.lastHint!.digit, isPositive);
+    });
+
+    test('selecting a cell clears the explanation', () async {
+      final n = makeNotifier(blanks: const [0, 1]);
+      addTearDown(n.dispose);
+      await n.ready;
+
+      n.applyHint();
+      expect(n.state.lastHint, isNotNull);
+      n.selectCell(1);
+      expect(n.state.lastHint, isNull);
+    });
+
+    test('dismissHint clears the explanation', () async {
+      final n = makeNotifier(blanks: const [0, 1]);
+      addTearDown(n.dispose);
+      await n.ready;
+
+      n.applyHint();
+      expect(n.state.lastHint, isNotNull);
+      n.dismissHint();
+      expect(n.state.lastHint, isNull);
+    });
+  });
+
+  test('persistNow snapshots the current game', () async {
+    final snapshots = <int>[];
+    final n = GameNotifier(
+      globalLevel: 1,
+      generator: (t, l, s) async => fakePuzzle(blanks: const [0, 1]),
+      seedSource: () => 0,
+      autoTick: false,
+      onPersist: (snap) => snapshots.add(snap.elapsedMs),
+    );
+    addTearDown(n.dispose);
+    await n.ready;
+
+    n.persistNow();
+    expect(snapshots, isNotEmpty);
+  });
 }

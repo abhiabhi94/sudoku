@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sudoku/engine/puzzle_factory.dart';
 import 'package:sudoku/models/game_state.dart';
 import 'package:sudoku/providers/game_provider.dart';
+import 'package:sudoku/providers/notes_provider.dart';
 import 'package:sudoku/screens/game_screen.dart';
 import 'package:sudoku/widgets/number_pad.dart';
 import 'package:sudoku/widgets/sudoku_grid.dart';
@@ -21,16 +23,20 @@ GameNotifier _testNotifier({List<int> blanks = const [0]}) {
   );
 }
 
-Future<void> _loadGame(WidgetTester tester, GameNotifier notifier) async {
+Future<ProviderContainer> _loadGame(
+    WidgetTester tester, GameNotifier notifier) async {
   await tester.binding.setSurfaceSize(const Size(500, 1100));
   addTearDown(() => tester.binding.setSurfaceSize(null));
-  await pumpApp(
+  final container = await pumpApp(
     tester,
     const GameScreen(globalLevel: 1),
-    extraOverrides: [gameProvider(1).overrideWith((ref) => notifier)],
+    extraOverrides: [
+      gameProvider((level: 1, resume: false)).overrideWith((ref) => notifier),
+    ],
   );
   await notifier.ready;
   await tester.pump(); // rebuild into the playing state
+  return container;
 }
 
 void main() {
@@ -116,5 +122,44 @@ void main() {
 
     expect(notifier.state.hintsUsed, 1);
     expect(notifier.state.hintCells, isNotEmpty);
+    // The "Why here?" explanation card appears after a hint.
+    expect(find.text('Why here?'), findsOneWidget);
+
+    // Closing it dismisses the explanation.
+    await tester.tap(find.byIcon(Icons.close_rounded));
+    await tester.pumpAndSettle();
+    expect(find.text('Why here?'), findsNothing);
+  });
+
+  testWidgets('the riddle offers a hidden clue on request', (tester) async {
+    final notifier = _testNotifier(blanks: const [0, 1]);
+    await _loadGame(tester, notifier);
+
+    await tester.tap(find.text('Hint'));
+    await tester.pumpAndSettle();
+    // Clue is hidden until asked for.
+    expect(find.textContaining('canyon'), findsNothing);
+
+    await tester.tap(find.text('Need a clue?'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('canyon'), findsOneWidget); // echo clue
+  });
+
+  testWidgets('notes button opens a sheet and saves per-level notes',
+      (tester) async {
+    final notifier = _testNotifier();
+    final container = await _loadGame(tester, notifier);
+
+    await tester.tap(find.byIcon(Icons.sticky_note_2_outlined));
+    await tester.pumpAndSettle();
+    expect(find.text('Notes · Level 1'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), 'box 4 needs a 9');
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(container.read(levelNoteProvider(1)), 'box 4 needs a 9');
+    // The app-bar icon now shows the "filled" note state.
+    expect(find.byIcon(Icons.sticky_note_2_rounded), findsOneWidget);
   });
 }

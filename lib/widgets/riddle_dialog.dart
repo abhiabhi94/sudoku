@@ -32,6 +32,7 @@ class _RiddleDialogState extends State<_RiddleDialog> {
   late int _index = widget.startIndex % widget.riddles.length;
   final _controller = TextEditingController();
   bool _wrong = false;
+  bool _showClue = false;
 
   Riddle get _riddle => widget.riddles[_index];
 
@@ -56,6 +57,7 @@ class _RiddleDialogState extends State<_RiddleDialog> {
       _index = (_index + 1) % widget.riddles.length;
       _controller.clear();
       _wrong = false;
+      _showClue = false;
     });
   }
 
@@ -81,7 +83,9 @@ class _RiddleDialogState extends State<_RiddleDialog> {
           Expanded(child: Text(l10n.hintTitle)),
         ],
       ),
-      content: Column(
+      // Scrollable so the clue + keyboard can't overflow on short screens.
+      content: SingleChildScrollView(
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -110,7 +114,34 @@ class _RiddleDialogState extends State<_RiddleDialog> {
               border: const OutlineInputBorder(),
             ),
           ),
+          const SizedBox(height: 4),
+          if (_showClue)
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: cellHinted,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text('🔍 ${_riddle.clue}',
+                  style: const TextStyle(color: textInk, height: 1.35)),
+            )
+          else
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton.icon(
+                onPressed: () => setState(() => _showClue = true),
+                icon: const Icon(Icons.help_outline_rounded, size: 18),
+                label: Text(l10n.hintShowClue),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+            ),
         ],
+        ),
       ),
       actions: [
         TextButton(

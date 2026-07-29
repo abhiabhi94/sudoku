@@ -2,7 +2,9 @@
 library;
 
 import '../engine/board.dart';
+import '../engine/hint_explainer.dart';
 import '../engine/puzzle_factory.dart';
+import 'saved_game.dart';
 
 /// Free wrong placements before the "you're guessing" lockout kicks in.
 const int maxFreeMistakes = 3;
@@ -25,6 +27,7 @@ class GameState {
     required this.hintCells,
     required this.errorCells,
     required this.lockoutRemainingMs,
+    this.lastHint,
   });
 
   final int globalLevel;
@@ -57,6 +60,10 @@ class GameState {
   /// Remaining lockout time in milliseconds (>0 only while locked out).
   final int lockoutRemainingMs;
 
+  /// The most recent hint's justification (for the "Why here?" card). Transient
+  /// UI state — not persisted, cleared on the next move or selection.
+  final HintExplanation? lastHint;
+
   /// Initial loading state for [level].
   factory GameState.loading(int level) => GameState(
         globalLevel: level,
@@ -85,6 +92,34 @@ class GameState {
         hintCells: <int>{},
         errorCells: <int>{},
         lockoutRemainingMs: 0,
+      );
+
+  /// Restores a playing state from a persisted [SavedGame]. A transient lockout
+  /// is not restored (resume always drops back into normal play).
+  factory GameState.restored(SavedGame saved) => GameState(
+        globalLevel: saved.globalLevel,
+        puzzle: saved.puzzle,
+        board: List<int>.of(saved.board),
+        selectedIndex: -1,
+        mistakes: saved.mistakes,
+        phase: GamePhase.playing,
+        elapsedMs: saved.elapsedMs,
+        hintsUsed: saved.hintsUsed,
+        hintCells: Set<int>.of(saved.hintCells),
+        errorCells: Set<int>.of(saved.errorCells),
+        lockoutRemainingMs: 0,
+      );
+
+  /// Snapshots the current play for persistence. Only valid once [puzzle] loaded.
+  SavedGame toSavedGame() => SavedGame(
+        globalLevel: globalLevel,
+        puzzle: puzzle!,
+        board: board,
+        mistakes: mistakes,
+        elapsedMs: elapsedMs,
+        hintsUsed: hintsUsed,
+        hintCells: hintCells,
+        errorCells: errorCells,
       );
 
   bool get isLoading => phase == GamePhase.loading;
@@ -127,6 +162,8 @@ class GameState {
     Set<int>? hintCells,
     Set<int>? errorCells,
     int? lockoutRemainingMs,
+    HintExplanation? lastHint,
+    bool clearHint = false,
   }) {
     return GameState(
       globalLevel: globalLevel,
@@ -140,6 +177,7 @@ class GameState {
       hintCells: hintCells ?? this.hintCells,
       errorCells: errorCells ?? this.errorCells,
       lockoutRemainingMs: lockoutRemainingMs ?? this.lockoutRemainingMs,
+      lastHint: clearHint ? null : (lastHint ?? this.lastHint),
     );
   }
 }

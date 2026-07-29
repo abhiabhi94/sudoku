@@ -176,6 +176,18 @@ abstract class AppLocalizations {
   /// **'Continue'**
   String get homeContinue;
 
+  /// No description provided for @homeResumeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{level} · {percent}% done'**
+  String homeResumeSubtitle(String level, int percent);
+
+  /// No description provided for @homeResumeDiscard.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get homeResumeDiscard;
+
   /// No description provided for @homeGamesCompleted.
   ///
   /// In en, this message translates to:
@@ -373,6 +385,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{used} hints used this level'**
   String hintProgress(int used);
+
+  /// No description provided for @hintShowClue.
+  ///
+  /// In en, this message translates to:
+  /// **'Need a clue?'**
+  String get hintShowClue;
+
+  /// No description provided for @hintWhyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Why here?'**
+  String get hintWhyTitle;
+
+  /// No description provided for @hintUnitRow.
+  ///
+  /// In en, this message translates to:
+  /// **'row'**
+  String get hintUnitRow;
+
+  /// No description provided for @hintUnitColumn.
+  ///
+  /// In en, this message translates to:
+  /// **'column'**
+  String get hintUnitColumn;
+
+  /// No description provided for @hintUnitBox.
+  ///
+  /// In en, this message translates to:
+  /// **'box'**
+  String get hintUnitBox;
+
+  /// No description provided for @hintWhyNaked.
+  ///
+  /// In en, this message translates to:
+  /// **'This cell\'s row, column and box already use every number except {digit} — so {digit} is the only one that fits.'**
+  String hintWhyNaked(int digit);
+
+  /// No description provided for @hintWhyHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'In this {unit}, {digit} can\'t go in any other empty cell — every other spot is blocked, so it belongs here.'**
+  String hintWhyHidden(String unit, int digit);
+
+  /// No description provided for @hintWhyAdvanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading all the numbers already on the board, {digit} is the only value this cell can take.'**
+  String hintWhyAdvanced(int digit);
+
+  /// No description provided for @notesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get notesTitle;
+
+  /// No description provided for @notesTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Level notes'**
+  String get notesTooltip;
+
+  /// No description provided for @notesPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Jot anything — candidates, reasoning, reminders…'**
+  String get notesPlaceholder;
+
+  /// No description provided for @notesSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get notesSave;
 
   /// No description provided for @victoryTitle.
   ///

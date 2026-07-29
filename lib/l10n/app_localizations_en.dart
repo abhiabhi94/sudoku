@@ -51,6 +51,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeContinue => 'Continue';
 
   @override
+  String homeResumeSubtitle(String level, int percent) {
+    return '$level · $percent% done';
+  }
+
+  @override
+  String get homeResumeDiscard => 'Discard';
+
+  @override
   String get homeGamesCompleted => 'Games completed';
 
   @override
@@ -160,6 +168,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String hintProgress(int used) {
     return '$used hints used this level';
   }
+
+  @override
+  String get hintShowClue => 'Need a clue?';
+
+  @override
+  String get hintWhyTitle => 'Why here?';
+
+  @override
+  String get hintUnitRow => 'row';
+
+  @override
+  String get hintUnitColumn => 'column';
+
+  @override
+  String get hintUnitBox => 'box';
+
+  @override
+  String hintWhyNaked(int digit) {
+    return 'This cell\'s row, column and box already use every number except $digit — so $digit is the only one that fits.';
+  }
+
+  @override
+  String hintWhyHidden(String unit, int digit) {
+    return 'In this $unit, $digit can\'t go in any other empty cell — every other spot is blocked, so it belongs here.';
+  }
+
+  @override
+  String hintWhyAdvanced(int digit) {
+    return 'Reading all the numbers already on the board, $digit is the only value this cell can take.';
+  }
+
+  @override
+  String get notesTitle => 'Notes';
+
+  @override
+  String get notesTooltip => 'Level notes';
+
+  @override
+  String get notesPlaceholder =>
+      'Jot anything — candidates, reasoning, reminders…';
+
+  @override
+  String get notesSave => 'Save';
 
   @override
   String get victoryTitle => 'Solved it!';

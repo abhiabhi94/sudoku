@@ -9,10 +9,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../engine/board.dart';
+import '../engine/hint_explainer.dart';
 import '../engine/puzzle_factory.dart';
 import '../engine/techniques.dart';
 import '../models/game_state.dart';
+import '../models/saved_game.dart';
 import '../services/haptics_service.dart';
+import 'active_game_provider.dart';
 import 'progress_provider.dart';
 
 /// Builds a puzzle for a band; the default runs on a background isolate.
@@ -28,6 +31,9 @@ class GameNotifier extends StateNotifier<GameState> {
   GameNotifier({
     required this.globalLevel,
     this.onSolved,
+    this.onPersist,
+    this.onFinish,
+    SavedGame? restore,
     this.haptics,
     this.generator = defaultPuzzleGenerator,
     Random? random,
@@ -36,16 +42,26 @@ class GameNotifier extends StateNotifier<GameState> {
   })  : _random = random ?? Random(),
         _seedSource = seedSource ?? (() => DateTime.now().microsecondsSinceEpoch),
         super(GameState.loading(globalLevel)) {
+    _restore = restore;
     _load();
   }
 
   final int globalLevel;
   final void Function(int level, int elapsedMs)? onSolved;
+
+  /// Persists a snapshot after each move so the game can be resumed later.
+  final void Function(SavedGame snapshot)? onPersist;
+
+  /// Clears the persisted snapshot once the game is over (solved).
+  final void Function()? onFinish;
   final HapticsService? haptics;
   final PuzzleGenerator generator;
   final Random _random;
   final int Function() _seedSource;
   final bool autoTick;
+
+  /// A snapshot to restore into instead of generating; consumed once on load.
+  SavedGame? _restore;
 
   Timer? _timer;
   final Completer<void> _ready = Completer<void>();
@@ -57,12 +73,30 @@ class GameNotifier extends StateNotifier<GameState> {
   int get _level => (globalLevel - 1) % 10 + 1;
 
   Future<void> _load() async {
+    // Resume a persisted game if one was handed in (consumed once, so a later
+    // "new puzzle" regenerates instead of restoring the same board).
+    final restore = _restore;
+    _restore = null;
+    if (restore != null) {
+      state = GameState.restored(restore);
+      _startTimer();
+      if (!_ready.isCompleted) _ready.complete();
+      return;
+    }
+
     final seed = _seedSource() ^ (globalLevel * 2654435761);
     final puzzle = await generator(_tier, _level, seed);
     if (!mounted) return;
     state = GameState.playing(globalLevel, puzzle);
     _startTimer();
     if (!_ready.isCompleted) _ready.complete();
+  }
+
+  /// Persists the current play so it can be resumed after the app is closed.
+  void _persist() {
+    final persist = onPersist;
+    if (persist == null || state.puzzle == null) return;
+    persist(state.toSavedGame());
   }
 
   void _startTimer() {
@@ -93,8 +127,21 @@ class GameNotifier extends StateNotifier<GameState> {
 
   void selectCell(int index) {
     if (state.phase != GamePhase.playing) return;
-    state = state.copyWith(selectedIndex: index);
+    state = state.copyWith(selectedIndex: index, clearHint: true);
     haptics?.tap();
+  }
+
+  /// Dismisses the "Why here?" hint explanation card.
+  void dismissHint() {
+    if (state.lastHint != null) state = state.copyWith(clearHint: true);
+  }
+
+  /// Persists the current game immediately (e.g. when the app is backgrounded),
+  /// capturing the up-to-the-second elapsed time.
+  void persistNow() {
+    if (state.phase == GamePhase.playing || state.phase == GamePhase.lockedOut) {
+      _persist();
+    }
   }
 
   void inputDigit(int digit) {
@@ -114,8 +161,13 @@ class GameNotifier extends StateNotifier<GameState> {
         board: board,
         errorCells: errors,
         phase: solved ? GamePhase.solved : GamePhase.playing,
+        clearHint: true,
       );
-      if (solved) _handleSolved();
+      if (solved) {
+        _handleSolved();
+      } else {
+        _persist();
+      }
     } else {
       errors.add(index);
       final mistakes = state.mistakes + 1;
@@ -128,6 +180,7 @@ class GameNotifier extends StateNotifier<GameState> {
           mistakes: mistakes,
           phase: GamePhase.lockedOut,
           lockoutRemainingMs: seconds * 1000,
+          clearHint: true,
         );
         haptics?.lockout();
       } else {
@@ -135,8 +188,10 @@ class GameNotifier extends StateNotifier<GameState> {
           board: board,
           errorCells: errors,
           mistakes: mistakes,
+          clearHint: true,
         );
       }
+      _persist();
     }
   }
 
@@ -147,7 +202,9 @@ class GameNotifier extends StateNotifier<GameState> {
     state = state.copyWith(
       board: List<int>.of(state.board)..[index] = 0,
       errorCells: Set<int>.of(state.errorCells)..remove(index),
+      clearHint: true,
     );
+    _persist();
   }
 
   /// Reveals one logically-deducible cell (fallback: the next empty cell from
@@ -169,6 +226,8 @@ class GameNotifier extends StateNotifier<GameState> {
       digit = puzzle.solution[empty];
     }
 
+    // Explain the placement from the board *before* the digit lands.
+    final explanation = explainHint(state.board, index, digit);
     final board = List<int>.of(state.board)..[index] = digit;
     final solved = _isBoardSolved(board, puzzle);
     state = state.copyWith(
@@ -178,8 +237,13 @@ class GameNotifier extends StateNotifier<GameState> {
       hintCells: Set<int>.of(state.hintCells)..add(index),
       hintsUsed: state.hintsUsed + 1,
       phase: solved ? GamePhase.solved : GamePhase.playing,
+      lastHint: explanation,
     );
-    if (solved) _handleSolved();
+    if (solved) {
+      _handleSolved();
+    } else {
+      _persist();
+    }
   }
 
   /// Regenerates a fresh puzzle for the same level.
@@ -192,6 +256,8 @@ class GameNotifier extends StateNotifier<GameState> {
   void _handleSolved() {
     _timer?.cancel();
     haptics?.victory();
+    // A finished game isn't resumable — drop the saved snapshot.
+    onFinish?.call();
     onSolved?.call(globalLevel, state.elapsedMs);
   }
 
@@ -216,14 +282,25 @@ class GameNotifier extends StateNotifier<GameState> {
   }
 }
 
+/// Family key for [gameProvider]: which level, and whether to resume the saved
+/// game (true only from the home "Continue" card) or deal a fresh puzzle.
+typedef GameArgs = ({int level, bool resume});
+
 // coverage:ignore-start
 final gameProvider =
-    StateNotifierProvider.autoDispose.family<GameNotifier, GameState, int>(
-  (ref, globalLevel) => GameNotifier(
-    globalLevel: globalLevel,
-    haptics: ref.read(hapticsProvider),
-    onSolved: (level, ms) =>
-        ref.read(progressProvider.notifier).recordCompletion(level, ms),
-  ),
+    StateNotifierProvider.autoDispose.family<GameNotifier, GameState, GameArgs>(
+  (ref, args) {
+    final active = ref.read(activeGameProvider.notifier);
+    final saved = args.resume ? ref.read(activeGameProvider) : null;
+    return GameNotifier(
+      globalLevel: args.level,
+      restore: saved != null && saved.globalLevel == args.level ? saved : null,
+      haptics: ref.read(hapticsProvider),
+      onPersist: active.save,
+      onFinish: active.clear,
+      onSolved: (level, ms) =>
+          ref.read(progressProvider.notifier).recordCompletion(level, ms),
+    );
+  },
 );
 // coverage:ignore-end

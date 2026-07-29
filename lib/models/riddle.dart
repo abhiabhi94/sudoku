@@ -6,6 +6,7 @@ class Riddle {
     required this.id,
     required this.prompt,
     required this.answers,
+    required this.clue,
   });
 
   final String id;
@@ -15,6 +16,9 @@ class Riddle {
 
   /// Accepted answers (compared after normalisation).
   final List<String> answers;
+
+  /// An optional nudge toward the answer, hidden until the player asks for it.
+  final String clue;
 
   /// Whether [input] matches any accepted answer (case/space/nukta-insensitive).
   bool accepts(String input) {

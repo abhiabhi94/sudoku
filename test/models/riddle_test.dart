@@ -6,6 +6,7 @@ void main() {
     id: 'r',
     prompt: 'p',
     answers: ['Echo', 'sound wave'],
+    clue: 'c',
   );
 
   test('accepts an exact answer ignoring case and spaces', () {
@@ -25,7 +26,7 @@ void main() {
   });
 
   test('normalises the Devanagari nukta', () {
-    const hindi = Riddle(id: 'h', prompt: 'p', answers: ['प्याज़']);
+    const hindi = Riddle(id: 'h', prompt: 'p', answers: ['प्याज़'], clue: 'c');
     expect(hindi.accepts('प्याज'), isTrue); // without nukta
     expect(hindi.accepts('प्याज़'), isTrue); // with nukta
   });

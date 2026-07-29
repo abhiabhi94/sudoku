@@ -21,6 +21,9 @@ class SudokuGrid extends StatelessWidget {
     final selected = state.selectedIndex;
     final selectedValue =
         selected >= 0 && state.board.isNotEmpty ? state.board[selected] : 0;
+    // While a hint's "Why here?" card is up, softly highlight the cells that
+    // justify the placement.
+    final explainCells = state.lastHint?.justifiers.toSet() ?? const <int>{};
 
     return AspectRatio(
       aspectRatio: 1,
@@ -47,6 +50,7 @@ class SudokuGrid extends StatelessWidget {
                           isPeer: selected >= 0 && _isPeer(selected, index),
                           sameValue: selectedValue != 0 &&
                               state.board[index] == selectedValue,
+                          isExplain: explainCells.contains(index),
                           onTap: () => onCellTap(index),
                         ),
                       );
@@ -81,6 +85,7 @@ class _Cell extends StatelessWidget {
     required this.isSelected,
     required this.isPeer,
     required this.sameValue,
+    required this.isExplain,
     required this.onTap,
   });
 
@@ -89,6 +94,7 @@ class _Cell extends StatelessWidget {
   final bool isSelected;
   final bool isPeer;
   final bool sameValue;
+  final bool isExplain;
   final VoidCallback onTap;
 
   @override
@@ -116,31 +122,41 @@ class _Cell extends StatelessWidget {
         textColor = textInk;
     }
 
+    final isError = kind == CellKind.error;
     if (isSelected) {
       background = cellSelected;
+    } else if (isError) {
+      background = cellErrorBg;
+    } else if (isExplain) {
+      background = cellExplain;
     } else if (sameValue && value != 0) {
       background = cellPeer;
     } else if (isPeer && kind != CellKind.given) {
       background = cellPeer.withValues(alpha: 0.5);
     }
 
+    // A wrong entry gets a bold red outline so it's impossible to miss.
+    final border = isError
+        ? Border.all(color: errorRed, width: 1.6)
+        : isExplain
+            ? Border.all(color: cellExplainBorder, width: 1.2)
+            : Border.all(color: gridLineSoft, width: 0.5);
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
-        decoration: BoxDecoration(
-          color: background,
-          border: Border.all(color: gridLineSoft, width: 0.5),
-        ),
+        decoration: BoxDecoration(color: background, border: border),
         alignment: Alignment.center,
         child: value == 0
             ? const SizedBox.shrink()
             : Text(
                 '$value',
                 style: TextStyle(
-                  fontSize: 22,
-                  fontWeight:
-                      kind == CellKind.given ? FontWeight.w800 : FontWeight.w600,
+                  fontSize: isError ? 23 : 22,
+                  fontWeight: kind == CellKind.given || isError
+                      ? FontWeight.w800
+                      : FontWeight.w600,
                   color: textColor,
                 ),
               ),

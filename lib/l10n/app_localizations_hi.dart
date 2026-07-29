@@ -51,6 +51,14 @@ class AppLocalizationsHi extends AppLocalizations {
   String get homeContinue => 'जारी रखें';
 
   @override
+  String homeResumeSubtitle(String level, int percent) {
+    return '$level · $percent% पूर्ण';
+  }
+
+  @override
+  String get homeResumeDiscard => 'हटाएँ';
+
+  @override
   String get homeGamesCompleted => 'पूरे किए गए खेल';
 
   @override
@@ -160,6 +168,49 @@ class AppLocalizationsHi extends AppLocalizations {
   String hintProgress(int used) {
     return 'इस लेवल में $used संकेत इस्तेमाल हुए';
   }
+
+  @override
+  String get hintShowClue => 'थोड़ा इशारा चाहिए?';
+
+  @override
+  String get hintWhyTitle => 'यहाँ क्यों?';
+
+  @override
+  String get hintUnitRow => 'पंक्ति';
+
+  @override
+  String get hintUnitColumn => 'स्तंभ';
+
+  @override
+  String get hintUnitBox => 'बॉक्स';
+
+  @override
+  String hintWhyNaked(int digit) {
+    return 'इस खाने की पंक्ति, स्तंभ और बॉक्स में $digit के अलावा बाकी सब नंबर पहले से मौजूद हैं — इसलिए यहाँ सिर्फ़ $digit ही आ सकता है।';
+  }
+
+  @override
+  String hintWhyHidden(String unit, int digit) {
+    return 'इस $unit में $digit किसी और खाली खाने में नहीं आ सकता — बाकी हर जगह रुकी हुई है, इसलिए यह यहीं आएगा।';
+  }
+
+  @override
+  String hintWhyAdvanced(int digit) {
+    return 'बोर्ड पर मौजूद सभी नंबरों को देखते हुए, इस खाने में सिर्फ़ $digit ही आ सकता है।';
+  }
+
+  @override
+  String get notesTitle => 'नोट्स';
+
+  @override
+  String get notesTooltip => 'लेवल नोट्स';
+
+  @override
+  String get notesPlaceholder =>
+      'कुछ भी लिखें — संभावनाएँ, तर्क, याद रखने की बातें…';
+
+  @override
+  String get notesSave => 'सहेजें';
 
   @override
   String get victoryTitle => 'हल हो गया!';

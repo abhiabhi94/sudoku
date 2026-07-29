@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/level_progress.dart';
+import '../models/saved_game.dart';
+import '../providers/active_game_provider.dart';
 import '../providers/progress_provider.dart';
 import '../ui/colors.dart';
 import '../utils/format.dart';
@@ -20,6 +22,7 @@ class HomeScreen extends ConsumerWidget {
     final progress = ref.watch(progressProvider);
     final notifier = ref.read(progressProvider.notifier);
     final totalGames = notifier.totalGamesCompleted;
+    final activeGame = ref.watch(activeGameProvider);
 
     final tiers = <_TierInfo>[
       _TierInfo(1, tierColors[0], l10n.tierBeginner, l10n.tierBeginnerTag),
@@ -74,6 +77,26 @@ class HomeScreen extends ConsumerWidget {
                 child: _GamesCompletedPill(count: totalGames, label: l10n.homeGamesCompleted),
               ),
             ),
+            if (activeGame != null)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 4, 24, 4),
+                  child: _ContinueCard(
+                    saved: activeGame,
+                    l10n: l10n,
+                    onResume: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => GameScreen(
+                          globalLevel: activeGame.globalLevel,
+                          resume: true,
+                        ),
+                      ),
+                    ),
+                    onDismiss: () =>
+                        ref.read(activeGameProvider.notifier).clear(),
+                  ),
+                ),
+              ),
             for (final tier in tiers)
               _TierSliver(
                 tier: tier,
@@ -126,6 +149,83 @@ class _GamesCompletedPill extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// Home banner to resume the last in-progress game. Shown only when a saved
+/// game exists; tapping resumes it, the close button discards it.
+class _ContinueCard extends StatelessWidget {
+  const _ContinueCard({
+    required this.saved,
+    required this.l10n,
+    required this.onResume,
+    required this.onDismiss,
+  });
+
+  final SavedGame saved;
+  final AppLocalizations l10n;
+  final VoidCallback onResume;
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    final localLevel = (saved.globalLevel - 1) % 10 + 1;
+    return Material(
+      color: primaryIndigo,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onResume,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 14, 6, 14),
+          child: Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: const BoxDecoration(
+                  color: Colors.white24,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.play_arrow_rounded,
+                    color: Colors.white, size: 28),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.homeContinue,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 18,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.homeResumeSubtitle(
+                          l10n.levelNumber(localLevel), saved.percentComplete),
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: onDismiss,
+                icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                tooltip: l10n.homeResumeDiscard,
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).animate().fadeIn(duration: 200.ms).slideY(begin: -0.1);
   }
 }
 

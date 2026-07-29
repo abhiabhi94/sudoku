@@ -36,6 +36,9 @@ const Color cellPeer = Color(0xFFF0EEFF);
 const Color cellHinted = Color(0xFFD5F6E9);
 const Color cellHintedBorder = Color(0xFF32D296);
 const Color cellErrorBg = Color(0xFFFFE2E2);
+// Cells that justify a hint ("Why here?") — a soft sunlit tint.
+const Color cellExplain = Color(0xFFFFF3D6);
+const Color cellExplainBorder = Color(0xFFFFD873);
 
 /// Per-tier signature colours (Beginner, Advanced, Expert).
 const List<Color> tierColors = <Color>[

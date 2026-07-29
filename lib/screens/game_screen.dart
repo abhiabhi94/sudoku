@@ -6,30 +6,73 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/riddle_bank.dart';
+import '../engine/hint_explainer.dart';
 import '../l10n/app_localizations.dart';
 import '../models/game_state.dart';
 import '../providers/game_provider.dart';
+import '../providers/notes_provider.dart';
 import '../providers/progress_provider.dart';
 import '../providers/settings_provider.dart';
 import '../ui/colors.dart';
 import '../utils/format.dart';
 import '../widgets/hint_progress_bar.dart';
 import '../widgets/mistakes_indicator.dart';
+import '../widgets/notes_sheet.dart';
 import '../widgets/number_pad.dart';
 import '../widgets/riddle_dialog.dart';
 import '../widgets/sudoku_grid.dart';
 
 /// The gameplay screen: board, number pad, timer, mistakes and hints.
-class GameScreen extends ConsumerWidget {
-  const GameScreen({super.key, required this.globalLevel});
+class GameScreen extends ConsumerStatefulWidget {
+  const GameScreen({
+    super.key,
+    required this.globalLevel,
+    this.resume = false,
+  });
 
   final int globalLevel;
 
-  int get _level => (globalLevel - 1) % 10 + 1;
+  /// When true, resume the persisted game for this level instead of dealing a
+  /// fresh puzzle (set by the home screen's "Continue" card).
+  final bool resume;
+
+  @override
+  ConsumerState<GameScreen> createState() => _GameScreenState();
+}
+
+class _GameScreenState extends ConsumerState<GameScreen>
+    with WidgetsBindingObserver {
+  /// Bumped on every new mistake to replay the board-shake animation.
+  int _shakeToken = 0;
+
+  GameArgs get _args => (level: widget.globalLevel, resume: widget.resume);
+  int get _level => (widget.globalLevel - 1) % 10 + 1;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Save the exact elapsed time the moment the app leaves the foreground.
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
+      ref.read(gameProvider(_args).notifier).persistNow();
+    }
+  }
 
   /// Opens the hint riddle; on a correct answer, reveals one cell.
-  Future<void> _requestHint(BuildContext context, WidgetRef ref) async {
-    final provider = gameProvider(globalLevel);
+  Future<void> _requestHint() async {
+    final provider = gameProvider(_args);
     final state = ref.read(provider);
     if (state.phase != GamePhase.playing) return;
     final riddles = riddlesFor(ref.read(settingsProvider).languageCode);
@@ -42,15 +85,31 @@ class GameScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(gameProvider(globalLevel));
-    final notifier = ref.read(gameProvider(globalLevel).notifier);
+    // Shake the board whenever the mistake count climbs.
+    ref.listen(gameProvider(_args), (prev, next) {
+      if (prev != null && next.mistakes > prev.mistakes) {
+        setState(() => _shakeToken++);
+      }
+    });
+    final state = ref.watch(gameProvider(_args));
+    final notifier = ref.read(gameProvider(_args).notifier);
+    final hasNote =
+        ref.watch(levelNoteProvider(widget.globalLevel)).isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.levelNumber(_level)),
         actions: [
+          IconButton(
+            tooltip: l10n.notesTooltip,
+            onPressed: () =>
+                showNotesSheet(context, level: widget.globalLevel),
+            icon: Icon(hasNote
+                ? Icons.sticky_note_2_rounded
+                : Icons.sticky_note_2_outlined),
+          ),
           if (!state.isLoading)
             IconButton(
               tooltip: l10n.gameNewPuzzle,
@@ -68,7 +127,8 @@ class GameScreen extends ConsumerWidget {
                     state: state,
                     notifier: notifier,
                     l10n: l10n,
-                    onHint: () => _requestHint(context, ref),
+                    onHint: _requestHint,
+                    shakeToken: _shakeToken,
                   ),
                   if (state.isLockedOut)
                     _LockoutOverlay(state: state, l10n: l10n),
@@ -77,11 +137,11 @@ class GameScreen extends ConsumerWidget {
                       state: state,
                       l10n: l10n,
                       onReplay: notifier.newPuzzle,
-                      onNext: globalLevel < totalLevels
+                      onNext: widget.globalLevel < totalLevels
                           ? () => Navigator.of(context).pushReplacement(
                                 MaterialPageRoute<void>(
-                                  builder: (_) =>
-                                      GameScreen(globalLevel: globalLevel + 1),
+                                  builder: (_) => GameScreen(
+                                      globalLevel: widget.globalLevel + 1),
                                 ),
                               )
                           : null,
@@ -121,12 +181,14 @@ class _PlayView extends StatelessWidget {
     required this.notifier,
     required this.l10n,
     required this.onHint,
+    required this.shakeToken,
   });
 
   final GameState state;
   final GameNotifier notifier;
   final AppLocalizations l10n;
   final VoidCallback onHint;
+  final int shakeToken;
 
   @override
   Widget build(BuildContext context) {
@@ -147,13 +209,114 @@ class _PlayView extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          SudokuGrid(state: state, onCellTap: notifier.selectCell),
+          _ShakeOnChange(
+            trigger: shakeToken,
+            child: SudokuGrid(state: state, onCellTap: notifier.selectCell),
+          ),
+          const SizedBox(height: 12),
+          if (state.lastHint != null)
+            _WhyCard(
+              text: _explainText(l10n, state.lastHint!),
+              onClose: notifier.dismissHint,
+            ),
           const Spacer(),
           NumberPad(
             state: state,
             onDigit: notifier.inputDigit,
             onErase: notifier.erase,
             onHint: onHint,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Plays a quick damped horizontal shake each time [trigger] changes. Uses an
+/// implicit animation (no stray timers), so it's safe in widget tests.
+class _ShakeOnChange extends StatelessWidget {
+  const _ShakeOnChange({required this.trigger, required this.child});
+
+  final int trigger;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      key: ValueKey(trigger),
+      tween: Tween<double>(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeOut,
+      builder: (context, t, child) {
+        final dx = trigger == 0 ? 0.0 : sin(t * pi * 5) * 9 * (1 - t);
+        return Transform.translate(offset: Offset(dx, 0), child: child);
+      },
+      child: child,
+    );
+  }
+}
+
+/// A localized, board-aware explanation of the latest hint placement.
+String _explainText(AppLocalizations l10n, HintExplanation e) {
+  switch (e.kind) {
+    case HintKind.nakedSingle:
+      return l10n.hintWhyNaked(e.digit);
+    case HintKind.hiddenSingle:
+      return l10n.hintWhyHidden(_unitName(l10n, e.unit), e.digit);
+    case HintKind.advanced:
+      return l10n.hintWhyAdvanced(e.digit);
+  }
+}
+
+String _unitName(AppLocalizations l10n, HintUnit unit) => switch (unit) {
+      HintUnit.row => l10n.hintUnitRow,
+      HintUnit.column => l10n.hintUnitColumn,
+      HintUnit.box => l10n.hintUnitBox,
+      HintUnit.none => '',
+    };
+
+/// The "Why here?" card shown after a hint, explaining the deduction.
+class _WhyCard extends StatelessWidget {
+  const _WhyCard({required this.text, required this.onClose});
+
+  final String text;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 12, 6, 12),
+      decoration: BoxDecoration(
+        color: cellExplain,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: cellExplainBorder),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('🔍', style: TextStyle(fontSize: 20)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.hintWhyTitle,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w800, color: textInk)),
+                const SizedBox(height: 2),
+                Text(text,
+                    style: const TextStyle(
+                        color: textInk, height: 1.35, fontSize: 13)),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: onClose,
+            icon: const Icon(Icons.close_rounded, size: 18),
+            color: textMuted,
+            tooltip: l10n.commonClose,
+            visualDensity: VisualDensity.compact,
           ),
         ],
       ),

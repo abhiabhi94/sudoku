@@ -12,6 +12,12 @@ import 'app_providers.dart';
 /// Total number of levels (3 tiers x 10).
 const int totalLevels = 30;
 
+/// Levels per tier.
+const int levelsPerTier = 10;
+
+/// Clearing this many levels in a tier unlocks the first level of the next tier.
+const int tierUnlockThreshold = 5;
+
 class SudokuProgressRepository {
   SudokuProgressRepository(this._prefs);
 
@@ -76,18 +82,41 @@ class ProgressNotifier extends StateNotifier<Map<int, LevelProgress>> {
   /// cleared. The debug ("Sudoku Testing") build unlocks everything.
   bool isUnlocked(int level) => _unlockAll || unlockedByProgress(level);
 
-  /// The pure unlock rule (ignores debug-mode overrides): level 1 is always
-  /// open; every other level needs the previous one cleared.
+  /// The pure unlock rule (ignores debug-mode overrides):
+  /// - Level 1 is always open.
+  /// - The first level of a tier (11, 21) opens once [tierUnlockThreshold]
+  ///   levels of the previous tier are cleared.
+  /// - Every other level needs the previous one cleared.
   bool unlockedByProgress(int level) {
     if (level <= 1) return true;
+    if (_isFirstOfTier(level)) {
+      return completedInTier(_tierIndexOf(level) - 1) >= tierUnlockThreshold;
+    }
     return progressFor(level - 1).completed;
+  }
+
+  /// Tier index (0..2) of a global [level].
+  int _tierIndexOf(int level) => (level - 1) ~/ levelsPerTier;
+
+  /// Whether [level] is the first level of a tier beyond the first (11 or 21).
+  bool _isFirstOfTier(int level) =>
+      level > 1 && (level - 1) % levelsPerTier == 0;
+
+  /// How many levels of tier [tierIndex] (0..2) are cleared.
+  int completedInTier(int tierIndex) {
+    final start = tierIndex * levelsPerTier + 1;
+    var count = 0;
+    for (var level = start; level < start + levelsPerTier; level++) {
+      if (progressFor(level).completed) count++;
+    }
+    return count;
   }
 
   /// The highest unlocked level (for a "Continue" affordance).
   int get highestUnlocked {
     var highest = 1;
     for (var level = 2; level <= totalLevels; level++) {
-      if (progressFor(level - 1).completed) highest = level;
+      if (unlockedByProgress(level)) highest = level;
     }
     return highest;
   }

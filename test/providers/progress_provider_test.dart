@@ -68,6 +68,31 @@ void main() {
       expect(notifier.highestUnlocked, 2);
     });
 
+    test('clearing 5 levels of a tier unlocks the next tier', () async {
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(await _prefs())],
+      );
+      addTearDown(container.dispose);
+      final notifier = container.read(progressProvider.notifier);
+
+      // Four Beginner clears: Advanced (level 11) still locked.
+      for (var level = 1; level <= 4; level++) {
+        notifier.recordCompletion(level, 1000);
+      }
+      expect(notifier.completedInTier(0), 4);
+      expect(notifier.unlockedByProgress(11), isFalse);
+
+      // The fifth clear opens the first Advanced level.
+      notifier.recordCompletion(5, 1000);
+      expect(notifier.completedInTier(0), 5);
+      expect(notifier.unlockedByProgress(11), isTrue);
+
+      // Within Advanced, level 12 still needs level 11 cleared first.
+      expect(notifier.unlockedByProgress(12), isFalse);
+      // Expert (level 21) still needs 5 Advanced clears.
+      expect(notifier.unlockedByProgress(21), isFalse);
+    });
+
     test('isUnlocked follows progress, or opens everything when unlockAll', () async {
       final repo = SudokuProgressRepository(await _prefs());
 
