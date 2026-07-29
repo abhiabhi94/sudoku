@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Store listing assets (marketing output — regenerate with tool/make_store_assets.py).
+# The generator scripts and assets/icon/ source art ARE tracked.
+/_screenshots/
