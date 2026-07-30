@@ -1,0 +1,3 @@
+# Placeholder so the declared asset dir (pubspec.yaml assets/audio/) exists on
+# fresh checkouts. Git does not track empty directories. Bundled CC-BY audio
+# tracks will replace the need for this once added.
