@@ -5,6 +5,7 @@ import '../engine/board.dart';
 import '../engine/hint_explainer.dart';
 import '../engine/puzzle_factory.dart';
 import 'saved_game.dart';
+import 'stroke.dart';
 
 /// Free wrong placements before the "you're guessing" lockout kicks in.
 const int maxFreeMistakes = 3;
@@ -27,6 +28,7 @@ class GameState {
     required this.hintCells,
     required this.errorCells,
     required this.lockoutRemainingMs,
+    this.cellNotes = const <int, List<Stroke>>{},
     this.lastHint,
   });
 
@@ -59,6 +61,11 @@ class GameState {
 
   /// Remaining lockout time in milliseconds (>0 only while locked out).
   final int lockoutRemainingMs;
+
+  /// Freehand scribble notes per cell (points normalised 0..1 within the cell).
+  /// A cell with a placed value hides its notes but keeps them (erasing the
+  /// value shows them again). Inert to mistakes/solve logic.
+  final Map<int, List<Stroke>> cellNotes;
 
   /// The most recent hint's justification (for the "Why here?" card). Transient
   /// UI state — not persisted, cleared on the next move or selection.
@@ -108,6 +115,7 @@ class GameState {
         hintCells: Set<int>.of(saved.hintCells),
         errorCells: Set<int>.of(saved.errorCells),
         lockoutRemainingMs: 0,
+        cellNotes: Map<int, List<Stroke>>.of(saved.cellNotes),
       );
 
   /// Snapshots the current play for persistence. Only valid once [puzzle] loaded.
@@ -120,7 +128,12 @@ class GameState {
         hintsUsed: hintsUsed,
         hintCells: hintCells,
         errorCells: errorCells,
+        cellNotes: cellNotes,
       );
+
+  /// The scribble strokes stored for [index] (empty when the cell has none).
+  List<Stroke> notesFor(int index) =>
+      cellNotes[index] ?? const <Stroke>[];
 
   bool get isLoading => phase == GamePhase.loading;
   bool get isSolved => phase == GamePhase.solved;
@@ -162,6 +175,7 @@ class GameState {
     Set<int>? hintCells,
     Set<int>? errorCells,
     int? lockoutRemainingMs,
+    Map<int, List<Stroke>>? cellNotes,
     HintExplanation? lastHint,
     bool clearHint = false,
   }) {
@@ -177,6 +191,7 @@ class GameState {
       hintCells: hintCells ?? this.hintCells,
       errorCells: errorCells ?? this.errorCells,
       lockoutRemainingMs: lockoutRemainingMs ?? this.lockoutRemainingMs,
+      cellNotes: cellNotes ?? this.cellNotes,
       lastHint: clearHint ? null : (lastHint ?? this.lastHint),
     );
   }

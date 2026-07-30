@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sudoku/models/game_state.dart';
+import 'package:sudoku/models/stroke.dart';
 
 import '../support/fake_puzzle.dart';
 
@@ -53,6 +54,20 @@ void main() {
     expect(s.isLocked(1), isTrue); // hint
     expect(s.isEditable(0), isTrue); // blank
     expect(s.isEditable(2), isFalse);
+  });
+
+  test('cell notes default empty and survive copyWith', () {
+    final s = GameState.playing(1, fakePuzzle(blanks: const [0, 1]));
+    expect(s.cellNotes, isEmpty);
+    expect(s.notesFor(0), isEmpty);
+
+    const stroke = Stroke([Offset(0.1, 0.2), Offset(0.3, 0.4)]);
+    final noted = s.copyWith(cellNotes: {
+      0: const [stroke],
+    });
+    expect(noted.notesFor(0), const [stroke]);
+    // Unrelated copyWith calls preserve the notes.
+    expect(noted.copyWith(selectedIndex: 5).notesFor(0), const [stroke]);
   });
 
   test('remainingForDigit counts placements left', () {

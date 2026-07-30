@@ -14,6 +14,7 @@ import '../engine/puzzle_factory.dart';
 import '../engine/techniques.dart';
 import '../models/game_state.dart';
 import '../models/saved_game.dart';
+import '../models/stroke.dart';
 import '../services/haptics_service.dart';
 import 'active_game_provider.dart';
 import 'progress_provider.dart';
@@ -193,6 +194,22 @@ class GameNotifier extends StateNotifier<GameState> {
       }
       _persist();
     }
+  }
+
+  /// Replaces the scribble notes for [index]. The panel owns the stroke list,
+  /// so undo/clear are just list edits reported here; an empty list drops the
+  /// entry. Notes are inert to the mistakes/solve logic.
+  void setCellNotes(int index, List<Stroke> strokes) {
+    if (state.phase != GamePhase.playing) return;
+    if (index < 0 || !state.isEditable(index)) return;
+    final notes = Map<int, List<Stroke>>.of(state.cellNotes);
+    if (strokes.isEmpty) {
+      notes.remove(index);
+    } else {
+      notes[index] = List<Stroke>.of(strokes);
+    }
+    state = state.copyWith(cellNotes: notes);
+    _persist();
   }
 
   void erase() {

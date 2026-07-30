@@ -6,35 +6,37 @@ import '../ui/colors.dart';
 
 /// Shows a riddle the player must solve to earn a hint. Resolves to true if the
 /// riddle was answered correctly, false if cancelled.
+///
+/// [first] is the riddle shown initially; [nextRiddle] supplies a fresh one each
+/// time the player asks for a new riddle. Both come from the caller's rotation
+/// so every riddle displayed is consumed from the non-repeating deck.
 Future<bool> showRiddleDialog(
   BuildContext context, {
-  required List<Riddle> riddles,
-  required int startIndex,
+  required Riddle first,
+  required Riddle Function() nextRiddle,
 }) async {
   final result = await showDialog<bool>(
     context: context,
-    builder: (_) => _RiddleDialog(riddles: riddles, startIndex: startIndex),
+    builder: (_) => _RiddleDialog(first: first, nextRiddle: nextRiddle),
   );
   return result ?? false;
 }
 
 class _RiddleDialog extends StatefulWidget {
-  const _RiddleDialog({required this.riddles, required this.startIndex});
+  const _RiddleDialog({required this.first, required this.nextRiddle});
 
-  final List<Riddle> riddles;
-  final int startIndex;
+  final Riddle first;
+  final Riddle Function() nextRiddle;
 
   @override
   State<_RiddleDialog> createState() => _RiddleDialogState();
 }
 
 class _RiddleDialogState extends State<_RiddleDialog> {
-  late int _index = widget.startIndex % widget.riddles.length;
+  late Riddle _riddle = widget.first;
   final _controller = TextEditingController();
   bool _wrong = false;
   bool _showClue = false;
-
-  Riddle get _riddle => widget.riddles[_index];
 
   @override
   void dispose() {
@@ -51,10 +53,10 @@ class _RiddleDialogState extends State<_RiddleDialog> {
     }
   }
 
-  /// Manually swap to a different riddle.
+  /// Swap to the next riddle from the rotation.
   void _newRiddle() {
     setState(() {
-      _index = (_index + 1) % widget.riddles.length;
+      _riddle = widget.nextRiddle();
       _controller.clear();
       _wrong = false;
       _showClue = false;

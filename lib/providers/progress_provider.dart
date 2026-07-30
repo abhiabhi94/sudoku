@@ -15,9 +15,6 @@ const int totalLevels = 30;
 /// Levels per tier.
 const int levelsPerTier = 10;
 
-/// Clearing this many levels in a tier unlocks the first level of the next tier.
-const int tierUnlockThreshold = 5;
-
 class SudokuProgressRepository {
   SudokuProgressRepository(this._prefs);
 
@@ -78,25 +75,20 @@ class ProgressNotifier extends StateNotifier<Map<int, LevelProgress>> {
   int get totalGamesCompleted =>
       state.values.fold(0, (sum, p) => sum + p.timesCompleted);
 
-  /// Level 1 is always open; each later level unlocks once the previous is
-  /// cleared. The debug ("Sudoku Testing") build unlocks everything.
+  /// The first level of each tier is always open; each later level unlocks
+  /// once the previous is cleared. The debug ("Sudoku Testing") build unlocks
+  /// everything.
   bool isUnlocked(int level) => _unlockAll || unlockedByProgress(level);
 
   /// The pure unlock rule (ignores debug-mode overrides):
-  /// - Level 1 is always open.
-  /// - The first level of a tier (11, 21) opens once [tierUnlockThreshold]
-  ///   levels of the previous tier are cleared.
+  /// - The first level of every tier (1, 11, 21) is always open, so a player
+  ///   can jump straight into Advanced or Expert.
   /// - Every other level needs the previous one cleared.
   bool unlockedByProgress(int level) {
     if (level <= 1) return true;
-    if (_isFirstOfTier(level)) {
-      return completedInTier(_tierIndexOf(level) - 1) >= tierUnlockThreshold;
-    }
+    if (_isFirstOfTier(level)) return true;
     return progressFor(level - 1).completed;
   }
-
-  /// Tier index (0..2) of a global [level].
-  int _tierIndexOf(int level) => (level - 1) ~/ levelsPerTier;
 
   /// Whether [level] is the first level of a tier beyond the first (11 or 21).
   bool _isFirstOfTier(int level) =>
@@ -112,11 +104,15 @@ class ProgressNotifier extends StateNotifier<Map<int, LevelProgress>> {
     return count;
   }
 
-  /// The highest unlocked level (for a "Continue" affordance).
+  /// The furthest level reached by linear progress — the highest level whose
+  /// previous level has been cleared (for a "Continue" affordance). This
+  /// deliberately ignores the always-open first level of each tier, so it
+  /// stays a meaningful resume target rather than jumping ahead to Advanced or
+  /// Expert on a fresh install.
   int get highestUnlocked {
     var highest = 1;
     for (var level = 2; level <= totalLevels; level++) {
-      if (unlockedByProgress(level)) highest = level;
+      if (progressFor(level - 1).completed) highest = level;
     }
     return highest;
   }

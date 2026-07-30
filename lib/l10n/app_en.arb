@@ -74,12 +74,7 @@
   "@hintWhyHidden": { "placeholders": { "unit": { "type": "String" }, "digit": { "type": "int" } } },
   "hintWhyAdvanced": "Reading all the numbers already on the board, {digit} is the only value this cell can take.",
   "@hintWhyAdvanced": { "placeholders": { "digit": { "type": "int" } } },
-  "notesTitle": "Notes",
-  "notesTooltip": "Level notes",
-  "notesPlaceholder": "Jot anything — candidates, reasoning, reminders…",
-  "notesSave": "Save",
-  "notesTabText": "Text",
-  "notesTabDraw": "Draw",
+  "notesScribbleHint": "Scribble notes for this cell",
   "notesUndo": "Undo",
   "notesClear": "Clear",
 

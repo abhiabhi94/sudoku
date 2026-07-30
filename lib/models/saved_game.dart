@@ -5,6 +5,7 @@
 library;
 
 import '../engine/puzzle_factory.dart';
+import 'stroke.dart';
 
 class SavedGame {
   const SavedGame({
@@ -16,6 +17,7 @@ class SavedGame {
     required this.hintsUsed,
     required this.hintCells,
     required this.errorCells,
+    this.cellNotes = const <int, List<Stroke>>{},
   });
 
   final int globalLevel;
@@ -30,6 +32,9 @@ class SavedGame {
   final int hintsUsed;
   final Set<int> hintCells;
   final Set<int> errorCells;
+
+  /// Freehand scribble notes per cell (points normalised 0..1 within the cell).
+  final Map<int, List<Stroke>> cellNotes;
 
   /// Blank cells in the original puzzle (the cells the player must fill).
   int get _blankCount {
@@ -72,11 +77,25 @@ class SavedGame {
         'hintsUsed': hintsUsed,
         'hintCells': hintCells.toList(),
         'errorCells': errorCells.toList(),
+        'cellNotes': <String, dynamic>{
+          for (final e in cellNotes.entries)
+            '${e.key}': e.value.map((s) => s.toFlat()).toList(),
+        },
       };
 
   factory SavedGame.fromJson(Map<String, dynamic> json) {
     List<int> ints(String key) =>
         (json[key] as List).map((e) => e as int).toList();
+    final notesJson = json['cellNotes'] as Map<String, dynamic>?;
+    final cellNotes = <int, List<Stroke>>{};
+    if (notesJson != null) {
+      for (final e in notesJson.entries) {
+        cellNotes[int.parse(e.key)] = (e.value as List)
+            .map((s) => Stroke.fromFlat(
+                (s as List).map((n) => (n as num).toDouble()).toList()))
+            .toList();
+      }
+    }
     return SavedGame(
       globalLevel: json['level'] as int,
       puzzle: GeneratedPuzzle(
@@ -95,6 +114,7 @@ class SavedGame {
       hintsUsed: json['hintsUsed'] as int,
       hintCells: ints('hintCells').toSet(),
       errorCells: ints('errorCells').toSet(),
+      cellNotes: cellNotes,
     );
   }
 }

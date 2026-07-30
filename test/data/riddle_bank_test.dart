@@ -2,11 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sudoku/data/riddle_bank.dart';
 
 void main() {
-  test('each language has ten riddles with unique ids and answers', () {
+  test('each language has fifty riddles with unique ids and answers', () {
     for (final lang in ['en', 'hi']) {
       final riddles = riddlesFor(lang);
-      expect(riddles.length, 10, reason: '$lang should have 10 riddles');
-      expect(riddles.map((r) => r.id).toSet().length, 10,
+      expect(riddles.length, 50, reason: '$lang should have 50 riddles');
+      expect(riddles.map((r) => r.id).toSet().length, 50,
           reason: '$lang ids must be unique');
       for (final r in riddles) {
         expect(r.prompt.trim(), isNotEmpty);

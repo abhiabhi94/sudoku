@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sudoku/engine/puzzle_factory.dart';
 import 'package:sudoku/models/game_state.dart';
+import 'package:sudoku/models/saved_game.dart';
+import 'package:sudoku/models/stroke.dart';
 import 'package:sudoku/providers/game_provider.dart';
 
 import '../support/fake_puzzle.dart';
@@ -229,6 +231,47 @@ void main() {
       expect(n.state.lastHint, isNotNull);
       n.dismissHint();
       expect(n.state.lastHint, isNull);
+    });
+  });
+
+  group('cell notes', () {
+    const stroke = Stroke([Offset(0.1, 0.2), Offset(0.4, 0.5)]);
+
+    test('setCellNotes stores strokes for an editable cell and persists',
+        () async {
+      final snapshots = <SavedGame>[];
+      final n = GameNotifier(
+        globalLevel: 1,
+        generator: (t, l, s) async => fakePuzzle(blanks: const [0, 1]),
+        seedSource: () => 0,
+        autoTick: false,
+        onPersist: snapshots.add,
+      );
+      addTearDown(n.dispose);
+      await n.ready;
+
+      n.setCellNotes(0, const [stroke]);
+      expect(n.state.notesFor(0), const [stroke]);
+      expect(snapshots.last.cellNotes[0], const [stroke]);
+    });
+
+    test('an empty stroke list drops the cell entry', () async {
+      final n = makeNotifier();
+      addTearDown(n.dispose);
+      await n.ready;
+
+      n.setCellNotes(0, const [stroke]);
+      expect(n.state.cellNotes.containsKey(0), isTrue);
+      n.setCellNotes(0, const []);
+      expect(n.state.cellNotes.containsKey(0), isFalse);
+    });
+
+    test('notes are rejected on a given (non-editable) cell', () async {
+      final n = makeNotifier();
+      addTearDown(n.dispose);
+      await n.ready;
+      n.setCellNotes(2, const [stroke]); // cell 2 is a given
+      expect(n.state.notesFor(2), isEmpty);
     });
   });
 

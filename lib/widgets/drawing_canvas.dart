@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../models/level_note.dart';
+import '../models/stroke.dart';
 import '../ui/colors.dart';
 
 /// A freehand drawing surface. Captures pan gestures as vector [Stroke]s

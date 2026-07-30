@@ -200,23 +200,7 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get notesTitle => 'नोट्स';
-
-  @override
-  String get notesTooltip => 'लेवल नोट्स';
-
-  @override
-  String get notesPlaceholder =>
-      'कुछ भी लिखें — संभावनाएँ, तर्क, याद रखने की बातें…';
-
-  @override
-  String get notesSave => 'सहेजें';
-
-  @override
-  String get notesTabText => 'लिखें';
-
-  @override
-  String get notesTabDraw => 'बनाएँ';
+  String get notesScribbleHint => 'इस खाने के लिए नोट्स बनाएँ';
 
   @override
   String get notesUndo => 'पूर्ववत';

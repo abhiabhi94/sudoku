@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../engine/board.dart';
 import '../models/game_state.dart';
+import '../models/stroke.dart';
 import '../ui/colors.dart';
 
 /// The 9x9 Sudoku board. Renders cell states, selection, peer/same-value
@@ -101,6 +102,7 @@ class _Cell extends StatelessWidget {
   Widget build(BuildContext context) {
     final kind = state.cellKind(index);
     final value = state.board.isNotEmpty ? state.board[index] : 0;
+    final notes = state.notesFor(index);
 
     Color background;
     Color textColor;
@@ -148,9 +150,10 @@ class _Cell extends StatelessWidget {
         duration: const Duration(milliseconds: 120),
         decoration: BoxDecoration(color: background, border: border),
         alignment: Alignment.center,
-        child: value == 0
-            ? const SizedBox.shrink()
-            : Text(
+        // A placed value wins the cell; otherwise show the scribble thumbnail
+        // (the notes are kept and reappear if the value is erased).
+        child: value != 0
+            ? Text(
                 '$value',
                 style: TextStyle(
                   fontSize: isError ? 23 : 22,
@@ -159,10 +162,49 @@ class _Cell extends StatelessWidget {
                       : FontWeight.w600,
                   color: textColor,
                 ),
-              ),
+              )
+            : notes.isEmpty
+                ? const SizedBox.shrink()
+                : CustomPaint(
+                    painter: _NotesThumbnailPainter(notes),
+                    child: const SizedBox.expand(),
+                  ),
       ),
     );
   }
+}
+
+/// Paints a cell's scribble notes, scaled from their normalised (0..1) points
+/// into the cell. A muted warm ink so notes read as their own layer, distinct
+/// from placed digits.
+class _NotesThumbnailPainter extends CustomPainter {
+  _NotesThumbnailPainter(this.strokes);
+
+  final List<Stroke> strokes;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = notesInk.withValues(alpha: 0.75)
+      ..strokeWidth = 1.6
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..style = PaintingStyle.stroke;
+    for (final stroke in strokes) {
+      if (stroke.points.length < 2) continue;
+      final path = Path();
+      final first = stroke.points.first;
+      path.moveTo(first.dx * size.width, first.dy * size.height);
+      for (var i = 1; i < stroke.points.length; i++) {
+        final p = stroke.points[i];
+        path.lineTo(p.dx * size.width, p.dy * size.height);
+      }
+      canvas.drawPath(path, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_NotesThumbnailPainter old) => old.strokes != strokes;
 }
 
 class _BoxLinesPainter extends CustomPainter {

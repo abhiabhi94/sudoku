@@ -72,12 +72,7 @@
   "@hintWhyHidden": { "placeholders": { "unit": { "type": "String" }, "digit": { "type": "int" } } },
   "hintWhyAdvanced": "बोर्ड पर मौजूद सभी नंबरों को देखते हुए, इस खाने में सिर्फ़ {digit} ही आ सकता है।",
   "@hintWhyAdvanced": { "placeholders": { "digit": { "type": "int" } } },
-  "notesTitle": "नोट्स",
-  "notesTooltip": "लेवल नोट्स",
-  "notesPlaceholder": "कुछ भी लिखें — संभावनाएँ, तर्क, याद रखने की बातें…",
-  "notesSave": "सहेजें",
-  "notesTabText": "लिखें",
-  "notesTabDraw": "बनाएँ",
+  "notesScribbleHint": "इस खाने के लिए नोट्स बनाएँ",
   "notesUndo": "पूर्ववत",
   "notesClear": "साफ़ करें",
 

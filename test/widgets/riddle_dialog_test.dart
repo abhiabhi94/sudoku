@@ -10,14 +10,18 @@ void main() {
 
   Future<bool?> openDialog(WidgetTester tester) async {
     bool? result;
+    var next = 1; // "New riddle" walks forward through the bank
     await pumpApp(
       tester,
       Builder(
         builder: (context) => Center(
           child: ElevatedButton(
             onPressed: () async {
-              result = await showRiddleDialog(context,
-                  riddles: riddles, startIndex: 0);
+              result = await showRiddleDialog(
+                context,
+                first: riddles[0],
+                nextRiddle: () => riddles[next++ % riddles.length],
+              );
             },
             child: const Text('go'),
           ),

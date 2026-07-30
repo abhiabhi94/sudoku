@@ -434,41 +434,11 @@ abstract class AppLocalizations {
   /// **'Reading all the numbers already on the board, {digit} is the only value this cell can take.'**
   String hintWhyAdvanced(int digit);
 
-  /// No description provided for @notesTitle.
+  /// No description provided for @notesScribbleHint.
   ///
   /// In en, this message translates to:
-  /// **'Notes'**
-  String get notesTitle;
-
-  /// No description provided for @notesTooltip.
-  ///
-  /// In en, this message translates to:
-  /// **'Level notes'**
-  String get notesTooltip;
-
-  /// No description provided for @notesPlaceholder.
-  ///
-  /// In en, this message translates to:
-  /// **'Jot anything — candidates, reasoning, reminders…'**
-  String get notesPlaceholder;
-
-  /// No description provided for @notesSave.
-  ///
-  /// In en, this message translates to:
-  /// **'Save'**
-  String get notesSave;
-
-  /// No description provided for @notesTabText.
-  ///
-  /// In en, this message translates to:
-  /// **'Text'**
-  String get notesTabText;
-
-  /// No description provided for @notesTabDraw.
-  ///
-  /// In en, this message translates to:
-  /// **'Draw'**
-  String get notesTabDraw;
+  /// **'Scribble notes for this cell'**
+  String get notesScribbleHint;
 
   /// No description provided for @notesUndo.
   ///

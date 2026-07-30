@@ -200,23 +200,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get notesTitle => 'Notes';
-
-  @override
-  String get notesTooltip => 'Level notes';
-
-  @override
-  String get notesPlaceholder =>
-      'Jot anything — candidates, reasoning, reminders…';
-
-  @override
-  String get notesSave => 'Save';
-
-  @override
-  String get notesTabText => 'Text';
-
-  @override
-  String get notesTabDraw => 'Draw';
+  String get notesScribbleHint => 'Scribble notes for this cell';
 
   @override
   String get notesUndo => 'Undo';

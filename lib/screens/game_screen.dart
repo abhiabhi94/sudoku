@@ -5,19 +5,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../data/riddle_bank.dart';
 import '../engine/hint_explainer.dart';
 import '../l10n/app_localizations.dart';
 import '../models/game_state.dart';
 import '../providers/game_provider.dart';
-import '../providers/notes_provider.dart';
 import '../providers/progress_provider.dart';
+import '../providers/riddle_rotation_provider.dart';
 import '../providers/settings_provider.dart';
 import '../ui/colors.dart';
 import '../utils/format.dart';
+import '../widgets/cell_notes_panel.dart';
 import '../widgets/hint_progress_bar.dart';
 import '../widgets/mistakes_indicator.dart';
-import '../widgets/notes_sheet.dart';
 import '../widgets/number_pad.dart';
 import '../widgets/riddle_dialog.dart';
 import '../widgets/sudoku_grid.dart';
@@ -75,11 +74,12 @@ class _GameScreenState extends ConsumerState<GameScreen>
     final provider = gameProvider(_args);
     final state = ref.read(provider);
     if (state.phase != GamePhase.playing) return;
-    final riddles = riddlesFor(ref.read(settingsProvider).languageCode);
+    final lang = ref.read(settingsProvider).languageCode;
+    final source = ref.read(riddleSourceProvider);
     final earned = await showRiddleDialog(
       context,
-      riddles: riddles,
-      startIndex: state.hintsUsed,
+      first: source.take(lang),
+      nextRiddle: () => source.take(lang),
     );
     if (earned) ref.read(provider.notifier).applyHint();
   }
@@ -95,21 +95,11 @@ class _GameScreenState extends ConsumerState<GameScreen>
     });
     final state = ref.watch(gameProvider(_args));
     final notifier = ref.read(gameProvider(_args).notifier);
-    final hasNote =
-        ref.watch(levelNoteProvider(widget.globalLevel)).isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.levelNumber(_level)),
         actions: [
-          IconButton(
-            tooltip: l10n.notesTooltip,
-            onPressed: () =>
-                showNotesSheet(context, level: widget.globalLevel),
-            icon: Icon(hasNote
-                ? Icons.sticky_note_2_rounded
-                : Icons.sticky_note_2_outlined),
-          ),
           if (!state.isLoading)
             IconButton(
               tooltip: l10n.gameNewPuzzle,
@@ -219,7 +209,23 @@ class _PlayView extends StatelessWidget {
               text: _explainText(l10n, state.lastHint!),
               onClose: notifier.dismissHint,
             ),
-          const Spacer(),
+          // The magnified scribble panel takes over the spare vertical space
+          // while an empty, editable cell is selected; otherwise it's just a
+          // flexible gap. A cell already holding a value shows the number pad's
+          // job (place/erase), not notes.
+          if (_showNotesPanel(state))
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 4, bottom: 12),
+                child: CellNotesPanel(
+                  strokes: state.notesFor(state.selectedIndex),
+                  onChanged: (s) =>
+                      notifier.setCellNotes(state.selectedIndex, s),
+                ),
+              ),
+            )
+          else
+            const Spacer(),
           NumberPad(
             state: state,
             onDigit: notifier.inputDigit,
@@ -254,6 +260,16 @@ class _ShakeOnChange extends StatelessWidget {
       child: child,
     );
   }
+}
+
+/// Whether to show the scribble panel: an empty, editable cell is selected
+/// during normal play (a filled cell is for placing/erasing digits, not notes).
+bool _showNotesPanel(GameState state) {
+  final i = state.selectedIndex;
+  return state.phase == GamePhase.playing &&
+      i >= 0 &&
+      state.isEditable(i) &&
+      state.board[i] == 0;
 }
 
 /// A localized, board-aware explanation of the latest hint placement.

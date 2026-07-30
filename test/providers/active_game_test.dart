@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sudoku/engine/puzzle_factory.dart';
 import 'package:sudoku/models/game_state.dart';
 import 'package:sudoku/models/saved_game.dart';
+import 'package:sudoku/models/stroke.dart';
 import 'package:sudoku/providers/active_game_provider.dart';
 import 'package:sudoku/providers/game_provider.dart';
 
@@ -47,6 +48,38 @@ void main() {
     test('percentComplete reflects filled blanks', () {
       // 3 blanks, 1 filled -> 33%.
       expect(_sample().percentComplete, 33);
+    });
+
+    test('round-trips per-cell scribble notes', () {
+      final puzzle = fakePuzzle(blanks: const [0, 1, 2]);
+      final game = SavedGame(
+        globalLevel: 7,
+        puzzle: puzzle,
+        board: List<int>.of(puzzle.givens),
+        mistakes: 0,
+        elapsedMs: 0,
+        hintsUsed: 0,
+        hintCells: const <int>{},
+        errorCells: const <int>{},
+        cellNotes: const {
+          0: [Stroke([Offset(0.1, 0.2), Offset(0.3, 0.4)])],
+          5: [
+            Stroke([Offset(0.5, 0.5), Offset(0.9, 0.1)]),
+            Stroke([Offset(0.2, 0.8), Offset(0.7, 0.3)]),
+          ],
+        },
+      );
+      final restored = SavedGame.fromJson(game.toJson());
+      expect(restored.cellNotes.keys.toSet(), {0, 5});
+      expect(restored.cellNotes[0]!.single.points,
+          [const Offset(0.1, 0.2), const Offset(0.3, 0.4)]);
+      expect(restored.cellNotes[5], hasLength(2));
+      expect(restored.cellNotes[5]![1].points.last, const Offset(0.7, 0.3));
+    });
+
+    test('a legacy save without the notes key loads with empty notes', () {
+      final json = _sample().toJson()..remove('cellNotes');
+      expect(SavedGame.fromJson(json).cellNotes, isEmpty);
     });
   });
 
