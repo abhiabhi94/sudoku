@@ -20,6 +20,7 @@ class SettingsRepository {
   static const _kMusicVolume = 'sudoku_music_volume';
   static const _kHaptics = 'sudoku_haptics_on';
   static const _kLanguage = 'sudoku_language';
+  static const _kTheme = 'sudoku_theme';
   static const _kOnboarding = 'sudoku_onboarding_done';
 
   Settings load() {
@@ -29,6 +30,7 @@ class SettingsRepository {
       musicVolume: _prefs.getDouble(_kMusicVolume) ?? d.musicVolume,
       hapticsOn: _prefs.getBool(_kHaptics) ?? d.hapticsOn,
       languageCode: _prefs.getString(_kLanguage) ?? d.languageCode,
+      themeChoice: _parseTheme(_prefs.getString(_kTheme), d.themeChoice),
       onboardingDone: _prefs.getBool(_kOnboarding) ?? d.onboardingDone,
     );
   }
@@ -38,7 +40,17 @@ class SettingsRepository {
     await _prefs.setDouble(_kMusicVolume, s.musicVolume);
     await _prefs.setBool(_kHaptics, s.hapticsOn);
     await _prefs.setString(_kLanguage, s.languageCode);
+    await _prefs.setString(_kTheme, s.themeChoice.name);
     await _prefs.setBool(_kOnboarding, s.onboardingDone);
+  }
+
+  /// Maps a stored theme name back to [ThemeChoice], falling back to [fallback]
+  /// for missing or unrecognised values.
+  static ThemeChoice _parseTheme(String? name, ThemeChoice fallback) {
+    for (final choice in ThemeChoice.values) {
+      if (choice.name == name) return choice;
+    }
+    return fallback;
   }
 }
 
@@ -56,6 +68,9 @@ class SettingsNotifier extends StateNotifier<Settings> {
     if (!supportedLanguageCodes.contains(code)) return;
     _update(state.copyWith(languageCode: code));
   }
+
+  void setThemeChoice(ThemeChoice choice) =>
+      _update(state.copyWith(themeChoice: choice));
 
   void completeOnboarding() => _update(state.copyWith(onboardingDone: true));
 

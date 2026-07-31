@@ -45,7 +45,7 @@ class NumberPad extends StatelessWidget {
               child: _ActionButton(
                 icon: Icons.backspace_rounded,
                 label: l10n.gameErase,
-                color: textMuted,
+                color: context.palette.textMuted,
                 onTap: onErase,
               ),
             ),
@@ -54,7 +54,7 @@ class NumberPad extends StatelessWidget {
               child: _ActionButton(
                 icon: Icons.lightbulb_rounded,
                 label: l10n.gameHint,
-                color: accentSun,
+                color: context.palette.accentSun,
                 onTap: onHint,
               ),
             ),
@@ -84,7 +84,7 @@ class _DigitButton extends StatelessWidget {
       child: AspectRatio(
         aspectRatio: 0.82,
         child: Material(
-          color: done ? backgroundSoft : surfaceWhite,
+          color: done ? context.palette.backgroundSoft : context.palette.surfaceWhite,
           borderRadius: BorderRadius.circular(14),
           child: InkWell(
             borderRadius: BorderRadius.circular(14),
@@ -95,7 +95,7 @@ class _DigitButton extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w800,
-                  color: done ? textFaint : primaryIndigo,
+                  color: done ? context.palette.textFaint : context.palette.userDigit,
                 ),
               ),
             ),
@@ -122,7 +122,7 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: surfaceWhite,
+      color: context.palette.surfaceWhite,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -135,7 +135,7 @@ class _ActionButton extends StatelessWidget {
               Icon(icon, color: color, size: 20),
               const SizedBox(width: 8),
               Text(label,
-                  style: TextStyle(color: textInk, fontWeight: FontWeight.w700)),
+                  style: TextStyle(color: context.palette.textInk, fontWeight: FontWeight.w700)),
             ],
           ),
         ),

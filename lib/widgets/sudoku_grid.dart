@@ -30,9 +30,9 @@ class SudokuGrid extends StatelessWidget {
       aspectRatio: 1,
       child: Container(
         decoration: BoxDecoration(
-          color: surfaceWhite,
+          color: context.palette.surfaceWhite,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: gridLineBold, width: 2),
+          border: Border.all(color: context.palette.gridLineBold, width: 2),
         ),
         clipBehavior: Clip.antiAlias,
         child: Stack(
@@ -52,6 +52,10 @@ class SudokuGrid extends StatelessWidget {
                           sameValue: selectedValue != 0 &&
                               state.board[index] == selectedValue,
                           isExplain: explainCells.contains(index),
+                          // Round the four corner cells so their fill follows the
+                          // board's rounded border instead of being clipped to a
+                          // square notch — keeps all four corners uniform.
+                          cornerRadius: _cornerRadius(row, col),
                           onTap: () => onCellTap(index),
                         ),
                       );
@@ -62,7 +66,9 @@ class SudokuGrid extends StatelessWidget {
             ),
             Positioned.fill(
               child: IgnorePointer(
-                child: CustomPaint(painter: _BoxLinesPainter()),
+                child: CustomPaint(
+                  painter: _BoxLinesPainter(context.palette.gridLineBold),
+                ),
               ),
             ),
           ],
@@ -77,6 +83,20 @@ class SudokuGrid extends StatelessWidget {
         colOf(selected) == colOf(index) ||
         boxOf(selected) == boxOf(index);
   }
+
+  /// A rounded corner for the four board-corner cells (zero elsewhere) so their
+  /// fill hugs the board's rounded border. 14 = outer radius (16) minus the 2px
+  /// border, so the cell sits flush inside it.
+  static BorderRadius _cornerRadius(int row, int col) {
+    const r = Radius.circular(14);
+    final last = boardSize - 1;
+    return BorderRadius.only(
+      topLeft: row == 0 && col == 0 ? r : Radius.zero,
+      topRight: row == 0 && col == last ? r : Radius.zero,
+      bottomLeft: row == last && col == 0 ? r : Radius.zero,
+      bottomRight: row == last && col == last ? r : Radius.zero,
+    );
+  }
 }
 
 class _Cell extends StatelessWidget {
@@ -87,6 +107,7 @@ class _Cell extends StatelessWidget {
     required this.isPeer,
     required this.sameValue,
     required this.isExplain,
+    required this.cornerRadius,
     required this.onTap,
   });
 
@@ -96,10 +117,12 @@ class _Cell extends StatelessWidget {
   final bool isPeer;
   final bool sameValue;
   final bool isExplain;
+  final BorderRadius cornerRadius;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     final kind = state.cellKind(index);
     final value = state.board.isNotEmpty ? state.board[index] : 0;
     final notes = state.notesFor(index);
@@ -108,47 +131,51 @@ class _Cell extends StatelessWidget {
     Color textColor;
     switch (kind) {
       case CellKind.given:
-        background = cellGiven;
-        textColor = textInk;
+        background = palette.cellGiven;
+        textColor = palette.textInk;
       case CellKind.userFilled:
-        background = surfaceWhite;
-        textColor = primaryIndigo;
+        background = palette.surfaceWhite;
+        textColor = palette.userDigit;
       case CellKind.hint:
-        background = cellHinted;
-        textColor = accentMint;
+        background = palette.cellHinted;
+        textColor = palette.accentMint;
       case CellKind.error:
-        background = cellErrorBg;
-        textColor = errorRed;
+        background = palette.cellErrorBg;
+        textColor = palette.errorRed;
       case CellKind.empty:
-        background = surfaceWhite;
-        textColor = textInk;
+        background = palette.surfaceWhite;
+        textColor = palette.textInk;
     }
 
     final isError = kind == CellKind.error;
     if (isSelected) {
-      background = cellSelected;
+      background = palette.cellSelected;
     } else if (isError) {
-      background = cellErrorBg;
+      background = palette.cellErrorBg;
     } else if (isExplain) {
-      background = cellExplain;
+      background = palette.cellExplain;
     } else if (sameValue && value != 0) {
-      background = cellPeer;
+      background = palette.cellPeer;
     } else if (isPeer && kind != CellKind.given) {
-      background = cellPeer.withValues(alpha: 0.5);
+      background = palette.cellPeer.withValues(alpha: 0.5);
     }
 
     // A wrong entry gets a bold red outline so it's impossible to miss.
     final border = isError
-        ? Border.all(color: errorRed, width: 1.6)
+        ? Border.all(color: palette.errorRed, width: 1.6)
         : isExplain
-            ? Border.all(color: cellExplainBorder, width: 1.2)
-            : Border.all(color: gridLineSoft, width: 0.5);
+            ? Border.all(color: palette.cellExplainBorder, width: 1.2)
+            : Border.all(color: palette.gridLineSoft, width: 0.5);
 
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
-        decoration: BoxDecoration(color: background, border: border),
+        decoration: BoxDecoration(
+          color: background,
+          border: border,
+          borderRadius: cornerRadius,
+        ),
         alignment: Alignment.center,
         // A placed value wins the cell; otherwise show the scribble thumbnail
         // (the notes are kept and reappear if the value is erased).
@@ -166,7 +193,7 @@ class _Cell extends StatelessWidget {
             : notes.isEmpty
                 ? const SizedBox.shrink()
                 : CustomPaint(
-                    painter: _NotesThumbnailPainter(notes),
+                    painter: _NotesThumbnailPainter(notes, palette.notesInk),
                     child: const SizedBox.expand(),
                   ),
       ),
@@ -178,14 +205,15 @@ class _Cell extends StatelessWidget {
 /// into the cell. A muted warm ink so notes read as their own layer, distinct
 /// from placed digits.
 class _NotesThumbnailPainter extends CustomPainter {
-  _NotesThumbnailPainter(this.strokes);
+  _NotesThumbnailPainter(this.strokes, this.color);
 
   final List<Stroke> strokes;
+  final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = notesInk.withValues(alpha: 0.75)
+      ..color = color.withValues(alpha: 0.75)
       ..strokeWidth = 1.6
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
@@ -204,14 +232,19 @@ class _NotesThumbnailPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_NotesThumbnailPainter old) => old.strokes != strokes;
+  bool shouldRepaint(_NotesThumbnailPainter old) =>
+      old.strokes != strokes || old.color != color;
 }
 
 class _BoxLinesPainter extends CustomPainter {
+  _BoxLinesPainter(this.color);
+
+  final Color color;
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = gridLineBold
+      ..color = color
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
     final cell = size.width / boardSize;
@@ -224,5 +257,5 @@ class _BoxLinesPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(_BoxLinesPainter old) => old.color != color;
 }

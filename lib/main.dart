@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'l10n/app_localizations.dart';
+import 'models/settings.dart';
 import 'providers/app_providers.dart';
 import 'providers/settings_provider.dart';
 import 'screens/home_screen.dart';
@@ -36,7 +37,9 @@ class SudokuApp extends ConsumerWidget {
     return MaterialApp(
       title: 'Sudoku',
       debugShowCheckedModeBanner: false,
-      theme: buildTheme(),
+      theme: buildLightTheme(),
+      darkTheme: buildDarkTheme(),
+      themeMode: _themeModeFor(settings.themeChoice),
       locale: Locale(settings.languageCode),
       localizationsDelegates: const [
         AppLocalizations.delegate,
@@ -50,4 +53,11 @@ class SudokuApp extends ConsumerWidget {
           : const OnboardingScreen(),
     );
   }
+
+  /// Maps the persisted [ThemeChoice] to Flutter's [ThemeMode].
+  ThemeMode _themeModeFor(ThemeChoice choice) => switch (choice) {
+        ThemeChoice.system => ThemeMode.system,
+        ThemeChoice.light => ThemeMode.light,
+        ThemeChoice.dark => ThemeMode.dark,
+      };
 }

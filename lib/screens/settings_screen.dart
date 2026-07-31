@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../l10n/app_localizations.dart';
+import '../models/settings.dart';
 import '../providers/settings_provider.dart';
 import '../ui/colors.dart';
 import 'credits_screen.dart';
@@ -36,7 +37,8 @@ class SettingsScreen extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
                       children: [
-                        const Icon(Icons.volume_up_rounded, color: textMuted),
+                        Icon(Icons.volume_up_rounded,
+                            color: context.palette.textMuted),
                         Expanded(
                           child: Slider(
                             value: settings.musicVolume,
@@ -44,7 +46,7 @@ class SettingsScreen extends ConsumerWidget {
                           ),
                         ),
                         Text('${(settings.musicVolume * 100).round()}%',
-                            style: const TextStyle(color: textMuted)),
+                            style: TextStyle(color: context.palette.textMuted)),
                       ],
                     ),
                   ),
@@ -92,6 +94,42 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           _SettingCard(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text('🌗', style: TextStyle(fontSize: 24)),
+                      const SizedBox(width: 12),
+                      Text(l10n.settingsTheme,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w700, fontSize: 16)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  SegmentedButton<ThemeChoice>(
+                    segments: <ButtonSegment<ThemeChoice>>[
+                      ButtonSegment(
+                          value: ThemeChoice.system,
+                          label: Text(l10n.themeSystem)),
+                      ButtonSegment(
+                          value: ThemeChoice.light,
+                          label: Text(l10n.themeLight)),
+                      ButtonSegment(
+                          value: ThemeChoice.dark, label: Text(l10n.themeDark)),
+                    ],
+                    selected: {settings.themeChoice},
+                    onSelectionChanged: (sel) =>
+                        notifier.setThemeChoice(sel.first),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _SettingCard(
             child: ListTile(
               leading: const Text('🎼', style: TextStyle(fontSize: 24)),
               title: Text(l10n.settingsCredits),
@@ -116,7 +154,7 @@ class _SettingCard extends StatelessWidget {
     // Uses Material (not a decorated Container) so ListTile/SwitchListTile can
     // paint their background and ink on a Material ancestor.
     return Material(
-      color: surfaceWhite,
+      color: context.palette.surfaceWhite,
       borderRadius: BorderRadius.circular(24),
       clipBehavior: Clip.antiAlias,
       child: child,

@@ -257,6 +257,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get settingsVolume => 'आवाज़';
 
   @override
+  String get settingsTheme => 'रूप-रंग';
+
+  @override
   String get settingsCredits => 'संगीत श्रेय';
 
   @override
@@ -264,6 +267,15 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get languageHindi => 'हिन्दी';
+
+  @override
+  String get themeSystem => 'सिस्टम';
+
+  @override
+  String get themeLight => 'उजला';
+
+  @override
+  String get themeDark => 'गहरा';
 
   @override
   String get creditsTitle => 'संगीत श्रेय';

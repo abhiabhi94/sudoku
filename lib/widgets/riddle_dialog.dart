@@ -92,17 +92,17 @@ class _RiddleDialogState extends State<_RiddleDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(l10n.hintIntro,
-              style: const TextStyle(color: textMuted, fontSize: 13)),
+              style: TextStyle(color: context.palette.textMuted, fontSize: 13)),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: backgroundSoft,
+              color: context.palette.backgroundSoft,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Text(_riddle.prompt,
-                style: const TextStyle(
-                    fontWeight: FontWeight.w700, height: 1.4, color: textInk)),
+                style: TextStyle(
+                    fontWeight: FontWeight.w700, height: 1.4, color: context.palette.textInk)),
           ),
           const SizedBox(height: 16),
           TextField(
@@ -123,11 +123,11 @@ class _RiddleDialogState extends State<_RiddleDialog> {
               margin: const EdgeInsets.only(top: 8),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: cellHinted,
+                color: context.palette.cellHinted,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text('🔍 ${_riddle.clue}',
-                  style: const TextStyle(color: textInk, height: 1.35)),
+                  style: TextStyle(color: context.palette.textInk, height: 1.35)),
             )
           else
             Align(

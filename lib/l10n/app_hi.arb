@@ -93,9 +93,13 @@
   "settingsVibrationSubtitle": "हर टैप महसूस करें",
   "settingsLanguage": "भाषा",
   "settingsVolume": "आवाज़",
+  "settingsTheme": "रूप-रंग",
   "settingsCredits": "संगीत श्रेय",
   "languageEnglish": "English",
   "languageHindi": "हिन्दी",
+  "themeSystem": "सिस्टम",
+  "themeLight": "उजला",
+  "themeDark": "गहरा",
 
   "creditsTitle": "संगीत श्रेय",
   "creditsIntro": "ये ट्रैक Creative Commons Attribution लाइसेंस के तहत उपयोग किए गए हैं। कलाकारों का धन्यवाद!",

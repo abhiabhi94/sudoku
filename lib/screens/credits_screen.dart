@@ -21,7 +21,7 @@ class CreditsScreen extends StatelessWidget {
         children: [
           Text(
             l10n.creditsIntro,
-            style: const TextStyle(color: textMuted, height: 1.5),
+            style: TextStyle(color: context.palette.textMuted, height: 1.5),
           ),
           const SizedBox(height: 20),
           for (final credit in credits)
@@ -29,7 +29,7 @@ class CreditsScreen extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: surfaceWhite,
+                color: context.palette.surfaceWhite,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Column(
@@ -37,15 +37,15 @@ class CreditsScreen extends StatelessWidget {
                 children: [
                   Text(
                     credit.title,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w800, fontSize: 16, color: textInk),
+                    style: TextStyle(
+                        fontWeight: FontWeight.w800, fontSize: 16, color: context.palette.textInk),
                   ),
                   const SizedBox(height: 4),
                   Text(l10n.creditsBy(credit.artist),
-                      style: const TextStyle(color: textMuted)),
+                      style: TextStyle(color: context.palette.textMuted)),
                   const SizedBox(height: 8),
                   Text('${credit.license} · ${credit.sourceUrl}',
-                      style: const TextStyle(color: textFaint, fontSize: 12)),
+                      style: TextStyle(color: context.palette.textFaint, fontSize: 12)),
                 ],
               ),
             ),

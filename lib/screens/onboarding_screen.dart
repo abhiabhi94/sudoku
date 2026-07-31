@@ -47,9 +47,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final slides = <_Slide>[
-      _Slide('🧩', accentMint, l10n.onboardTitle1, l10n.onboardBody1),
-      _Slide('🚀', primaryIndigo, l10n.onboardTitle2, l10n.onboardBody2),
-      _Slide('💡', accentSun, l10n.onboardTitle3, l10n.onboardBody3),
+      _Slide('🧩', context.palette.accentMint, l10n.onboardTitle1, l10n.onboardBody1),
+      _Slide('🚀', context.palette.primaryIndigo, l10n.onboardTitle2, l10n.onboardBody2),
+      _Slide('💡', context.palette.accentSun, l10n.onboardTitle3, l10n.onboardBody3),
     ];
     final lastIndex = slides.length - 1;
     final onLast = _page == lastIndex;
@@ -133,7 +133,7 @@ class _SlideView extends StatelessWidget {
             style: Theme.of(context)
                 .textTheme
                 .headlineMedium
-                ?.copyWith(fontWeight: FontWeight.w800, color: textInk),
+                ?.copyWith(fontWeight: FontWeight.w800, color: context.palette.textInk),
           ),
           const SizedBox(height: 16),
           Text(
@@ -142,7 +142,7 @@ class _SlideView extends StatelessWidget {
             style: Theme.of(context)
                 .textTheme
                 .bodyLarge
-                ?.copyWith(color: textMuted, height: 1.5),
+                ?.copyWith(color: context.palette.textMuted, height: 1.5),
           ),
         ],
       ),
@@ -167,7 +167,7 @@ class _Dots extends StatelessWidget {
           width: on ? 26 : 8,
           height: 8,
           decoration: BoxDecoration(
-            color: on ? primaryIndigo : primaryIndigoLight.withValues(alpha: 0.5),
+            color: on ? context.palette.primaryIndigo : context.palette.primaryIndigoLight.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(4),
           ),
         );

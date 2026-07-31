@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sudoku/models/settings.dart';
 import 'package:sudoku/providers/settings_provider.dart';
 import 'package:sudoku/screens/settings_screen.dart';
 
@@ -23,5 +24,14 @@ void main() {
     await tester.tap(find.text('हिन्दी'));
     await tester.pump();
     expect(container.read(settingsProvider).languageCode, 'hi');
+  });
+
+  testWidgets('choosing Dark updates the theme choice', (tester) async {
+    final container = await pumpApp(tester, const SettingsScreen());
+    expect(container.read(settingsProvider).themeChoice, ThemeChoice.system);
+
+    await tester.tap(find.text('Dark'));
+    await tester.pump();
+    expect(container.read(settingsProvider).themeChoice, ThemeChoice.dark);
   });
 }

@@ -31,10 +31,19 @@ void main() {
         musicVolume: 0.3,
         hapticsOn: false,
         languageCode: 'hi',
+        themeChoice: ThemeChoice.dark,
         onboardingDone: true,
       );
       await repo.save(custom);
       expect(SettingsRepository(prefs).load(), custom);
+    });
+
+    test('defaults to system theme, and unknown stored values fall back',
+        () async {
+      expect(Settings.defaults.themeChoice, ThemeChoice.system);
+      final repo = SettingsRepository(
+          await _prefs(<String, Object>{'sudoku_theme': 'chartreuse'}));
+      expect(repo.load().themeChoice, ThemeChoice.system);
     });
   });
 
@@ -48,12 +57,14 @@ void main() {
       notifier.setMusic(false);
       notifier.setHaptics(false);
       notifier.setLanguage('hi');
+      notifier.setThemeChoice(ThemeChoice.dark);
       notifier.completeOnboarding();
 
       final state = container.read(settingsProvider);
       expect(state.musicOn, isFalse);
       expect(state.hapticsOn, isFalse);
       expect(state.languageCode, 'hi');
+      expect(state.themeChoice, ThemeChoice.dark);
       expect(state.onboardingDone, isTrue);
       // Persisted to prefs (the notifier saves asynchronously).
       await pumpEventQueue();

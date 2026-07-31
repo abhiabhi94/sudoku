@@ -158,7 +158,7 @@ class _LoadingView extends StatelessWidget {
               .animate(onPlay: (c) => c.repeat())
               .rotate(duration: 1400.ms),
           const SizedBox(height: 20),
-          Text(message, style: const TextStyle(color: textMuted)),
+          Text(message, style: TextStyle(color: context.palette.textMuted)),
         ],
       ),
     );
@@ -304,9 +304,9 @@ class _WhyCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 12, 6, 12),
       decoration: BoxDecoration(
-        color: cellExplain,
+        color: context.palette.cellExplain,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: cellExplainBorder),
+        border: Border.all(color: context.palette.cellExplainBorder),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -318,19 +318,19 @@ class _WhyCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(l10n.hintWhyTitle,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w800, color: textInk)),
+                    style: TextStyle(
+                        fontWeight: FontWeight.w800, color: context.palette.textInk)),
                 const SizedBox(height: 2),
                 Text(text,
-                    style: const TextStyle(
-                        color: textInk, height: 1.35, fontSize: 13)),
+                    style: TextStyle(
+                        color: context.palette.textInk, height: 1.35, fontSize: 13)),
               ],
             ),
           ),
           IconButton(
             onPressed: onClose,
             icon: const Icon(Icons.close_rounded, size: 18),
-            color: textMuted,
+            color: context.palette.textMuted,
             tooltip: l10n.commonClose,
             visualDensity: VisualDensity.compact,
           ),
@@ -350,17 +350,17 @@ class _Pill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: surfaceWhite,
+        color: context.palette.surfaceWhite,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 18, color: textMuted),
+          Icon(icon, size: 18, color: context.palette.textMuted),
           const SizedBox(width: 6),
           Text(text,
-              style: const TextStyle(
-                  fontWeight: FontWeight.w800, color: textInk)),
+              style: TextStyle(
+                  fontWeight: FontWeight.w800, color: context.palette.textInk)),
         ],
       ),
     );
@@ -383,7 +383,7 @@ class _LockoutOverlay extends StatelessWidget {
             margin: const EdgeInsets.all(32),
             padding: const EdgeInsets.all(28),
             decoration: BoxDecoration(
-              color: surfaceWhite,
+              color: context.palette.surfaceWhite,
               borderRadius: BorderRadius.circular(28),
             ),
             child: Column(
@@ -397,11 +397,11 @@ class _LockoutOverlay extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(l10n.lockoutBody,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: textMuted, height: 1.4)),
+                    style: TextStyle(color: context.palette.textMuted, height: 1.4)),
                 const SizedBox(height: 16),
                 Text(l10n.lockoutCountdown(seconds),
-                    style: const TextStyle(
-                        color: guessAmber, fontWeight: FontWeight.w800)),
+                    style: TextStyle(
+                        color: context.palette.guessAmber, fontWeight: FontWeight.w800)),
               ],
             ),
           ),
@@ -462,11 +462,11 @@ class _VictoryOverlayState extends State<_VictoryOverlay> {
                 shouldLoop: false,
                 numberOfParticles: 24,
                 gravity: 0.25,
-                colors: const [
-                  primaryIndigo,
-                  accentCoral,
-                  accentMint,
-                  accentSun,
+                colors: [
+                  context.palette.primaryIndigo,
+                  context.palette.accentCoral,
+                  context.palette.accentMint,
+                  context.palette.accentSun,
                 ],
                 createParticlePath: (size) => Path()
                   ..addOval(Rect.fromCircle(
@@ -478,7 +478,7 @@ class _VictoryOverlayState extends State<_VictoryOverlay> {
             margin: const EdgeInsets.all(28),
             padding: const EdgeInsets.all(28),
             decoration: BoxDecoration(
-              color: surfaceWhite,
+              color: context.palette.surfaceWhite,
               borderRadius: BorderRadius.circular(28),
             ),
             child: Column(
@@ -490,7 +490,7 @@ class _VictoryOverlayState extends State<_VictoryOverlay> {
                     style: const TextStyle(
                         fontSize: 26, fontWeight: FontWeight.w900)),
                 Text(l10n.victoryCheer,
-                    style: const TextStyle(color: textMuted)),
+                    style: TextStyle(color: context.palette.textMuted)),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -550,9 +550,9 @@ class _Stat extends StatelessWidget {
     return Column(
       children: [
         Text(value,
-            style: const TextStyle(
-                fontSize: 22, fontWeight: FontWeight.w900, color: primaryIndigo)),
-        Text(label, style: const TextStyle(color: textMuted, fontSize: 12)),
+            style: TextStyle(
+                fontSize: 22, fontWeight: FontWeight.w900, color: context.palette.primaryIndigo)),
+        Text(label, style: TextStyle(color: context.palette.textMuted, fontSize: 12)),
       ],
     );
   }

@@ -14,6 +14,7 @@ Future<ProviderContainer> pumpApp(
   Map<String, Object> seed = const {},
   Locale locale = const Locale('en'),
   List<Override> extraOverrides = const [],
+  ThemeMode themeMode = ThemeMode.light,
 }) async {
   SharedPreferences.setMockInitialValues(seed);
   final prefs = await SharedPreferences.getInstance();
@@ -29,7 +30,9 @@ Future<ProviderContainer> pumpApp(
     UncontrolledProviderScope(
       container: container,
       child: MaterialApp(
-        theme: buildTheme(),
+        theme: buildLightTheme(),
+        darkTheme: buildDarkTheme(),
+        themeMode: themeMode,
         locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,

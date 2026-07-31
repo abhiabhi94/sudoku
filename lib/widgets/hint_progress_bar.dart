@@ -24,7 +24,7 @@ class HintProgressBar extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: surfaceWhite,
+          color: context.palette.surfaceWhite,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
@@ -34,14 +34,14 @@ class HintProgressBar extends StatelessWidget {
               Icon(
                 Icons.lightbulb_rounded,
                 size: 16,
-                color: i < hintsUsed ? accentSun : gridLineSoft,
+                color: i < hintsUsed ? context.palette.accentSun : context.palette.gridLineSoft,
               ),
             if (overflow > 0)
               Padding(
                 padding: const EdgeInsets.only(left: 4),
                 child: Text('+$overflow',
-                    style: const TextStyle(
-                        color: accentSun, fontWeight: FontWeight.w800, fontSize: 13)),
+                    style: TextStyle(
+                        color: context.palette.accentSun, fontWeight: FontWeight.w800, fontSize: 13)),
               ),
           ],
         ),

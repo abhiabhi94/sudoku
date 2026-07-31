@@ -2,12 +2,18 @@
 /// with [copyWith]. Pure Dart (no Flutter).
 library;
 
+/// The theme preference. [system] (default) follows the OS light/dark setting;
+/// [light]/[dark] force one. Kept as a plain Dart enum (no Flutter import) so
+/// the model stays pure; mapped to Flutter's ThemeMode in main.dart.
+enum ThemeChoice { system, light, dark }
+
 class Settings {
   const Settings({
     required this.musicOn,
     required this.musicVolume,
     required this.hapticsOn,
     required this.languageCode,
+    required this.themeChoice,
     required this.onboardingDone,
   });
 
@@ -23,6 +29,9 @@ class Settings {
   /// Active language: 'en' (default) or 'hi'.
   final String languageCode;
 
+  /// Theme preference (system/light/dark). System by default.
+  final ThemeChoice themeChoice;
+
   /// Whether the one-time onboarding has been seen.
   final bool onboardingDone;
 
@@ -32,6 +41,7 @@ class Settings {
     musicVolume: 0.6,
     hapticsOn: true,
     languageCode: 'en',
+    themeChoice: ThemeChoice.system,
     onboardingDone: false,
   );
 
@@ -40,6 +50,7 @@ class Settings {
     double? musicVolume,
     bool? hapticsOn,
     String? languageCode,
+    ThemeChoice? themeChoice,
     bool? onboardingDone,
   }) {
     return Settings(
@@ -47,6 +58,7 @@ class Settings {
       musicVolume: musicVolume ?? this.musicVolume,
       hapticsOn: hapticsOn ?? this.hapticsOn,
       languageCode: languageCode ?? this.languageCode,
+      themeChoice: themeChoice ?? this.themeChoice,
       onboardingDone: onboardingDone ?? this.onboardingDone,
     );
   }
@@ -58,6 +70,7 @@ class Settings {
       other.musicVolume == musicVolume &&
       other.hapticsOn == hapticsOn &&
       other.languageCode == languageCode &&
+      other.themeChoice == themeChoice &&
       other.onboardingDone == onboardingDone;
 
   @override
@@ -66,6 +79,7 @@ class Settings {
         musicVolume,
         hapticsOn,
         languageCode,
+        themeChoice,
         onboardingDone,
       );
 }

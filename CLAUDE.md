@@ -77,7 +77,7 @@ lib/
   providers/           app_providers (DI root), settings_provider, progress_provider, game_provider
   services/            haptics_service, audio_service (both behind injectable backends)
   screens/             onboarding, home, game, settings, credits
-  ui/                  colors.dart, theme.dart (Material 3 + Nunito via google_fonts)
+  ui/                  colors.dart (light+dark SudokuPalette), theme.dart (Material 3 + Nunito)
   widgets/             sudoku_grid, number_pad, mistakes_indicator, hint_progress_bar, riddle_dialog
   l10n/                app_en.arb, app_hi.arb (+ generated app_localizations*.dart)
 ```
@@ -124,6 +124,7 @@ whenever you upgrade the toolchain.
 ## Conventions
 
 - Dart `^3.12.2`, Material 3, `useMaterial3: true`; stock `flutter_lints` (no overrides).
+- **Theming:** light + dark via `ThemeMode` (default `system`, set in Settings). Widgets read board/semantic colours through `context.palette` (a `SudokuPalette` chosen by brightness) — never hardcode a `Color`. Add new tokens as fields on `SudokuPalette` with both light/dark values in `ui/colors.dart`.
 - `snake_case` filenames; const-heavy; trailing commas; imports at the top.
 - Immutable state with `copyWith`; Riverpod **StateNotifier** style (not codegen).
 - **No `try/except`** unless explicitly required. Pre-compile regexes as constants.

@@ -95,9 +95,13 @@
   "settingsVibrationSubtitle": "Feel every tap",
   "settingsLanguage": "Language",
   "settingsVolume": "Volume",
+  "settingsTheme": "Appearance",
   "settingsCredits": "Music credits",
   "languageEnglish": "English",
   "languageHindi": "हिन्दी",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
 
   "creditsTitle": "Music credits",
   "creditsIntro": "These tracks are used under a Creative Commons Attribution licence. Thank you to the artists!",

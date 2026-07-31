@@ -25,9 +25,9 @@ class HomeScreen extends ConsumerWidget {
     final activeGame = ref.watch(activeGameProvider);
 
     final tiers = <_TierInfo>[
-      _TierInfo(1, tierColors[0], l10n.tierBeginner, l10n.tierBeginnerTag),
-      _TierInfo(2, tierColors[1], l10n.tierAdvanced, l10n.tierAdvancedTag),
-      _TierInfo(3, tierColors[2], l10n.tierExpert, l10n.tierExpertTag),
+      _TierInfo(1, context.palette.tierColors[0], l10n.tierBeginner, l10n.tierBeginnerTag),
+      _TierInfo(2, context.palette.tierColors[1], l10n.tierAdvanced, l10n.tierAdvancedTag),
+      _TierInfo(3, context.palette.tierColors[2], l10n.tierExpert, l10n.tierExpertTag),
     ];
 
     return Scaffold(
@@ -48,12 +48,12 @@ class HomeScreen extends ConsumerWidget {
                             l10n.appTitle,
                             style: Theme.of(context).textTheme.displaySmall
                                 ?.copyWith(
-                                    fontWeight: FontWeight.w900, color: textInk),
+                                    fontWeight: FontWeight.w900, color: context.palette.textInk),
                           ),
                           Text(
                             l10n.appTagline,
                             style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(color: textMuted),
+                                ?.copyWith(color: context.palette.textMuted),
                           ),
                         ],
                       ),
@@ -130,7 +130,7 @@ class _GamesCompletedPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       decoration: BoxDecoration(
-        color: surfaceWhite,
+        color: context.palette.surfaceWhite,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -142,10 +142,10 @@ class _GamesCompletedPill extends StatelessWidget {
             style: Theme.of(context)
                 .textTheme
                 .headlineSmall
-                ?.copyWith(fontWeight: FontWeight.w900, color: primaryIndigo),
+                ?.copyWith(fontWeight: FontWeight.w900, color: context.palette.primaryIndigo),
           ),
           const SizedBox(width: 8),
-          Text(label, style: const TextStyle(color: textMuted, fontWeight: FontWeight.w600)),
+          Text(label, style: TextStyle(color: context.palette.textMuted, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -171,7 +171,7 @@ class _ContinueCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final localLevel = (saved.globalLevel - 1) % 10 + 1;
     return Material(
-      color: primaryIndigo,
+      color: context.palette.primaryIndigo,
       borderRadius: BorderRadius.circular(20),
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
@@ -263,10 +263,10 @@ class _TierSliver extends StatelessWidget {
                   style: Theme.of(context)
                       .textTheme
                       .titleLarge
-                      ?.copyWith(fontWeight: FontWeight.w800, color: textInk),
+                      ?.copyWith(fontWeight: FontWeight.w800, color: context.palette.textInk),
                 ),
                 const SizedBox(width: 8),
-                Text('· ${tier.tag}', style: const TextStyle(color: textFaint)),
+                Text('· ${tier.tag}', style: TextStyle(color: context.palette.textFaint)),
               ],
             ),
             const SizedBox(height: 12),
@@ -321,7 +321,7 @@ class _LevelTile extends StatelessWidget {
       label: l10n.levelNumber(level),
       button: unlocked,
       child: Material(
-        color: unlocked ? surfaceWhite : backgroundSoft,
+        color: unlocked ? context.palette.surfaceWhite : context.palette.backgroundSoft,
         borderRadius: BorderRadius.circular(18),
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
@@ -336,7 +336,7 @@ class _LevelTile extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                color: cleared ? color : gridLineSoft,
+                color: cleared ? color : context.palette.gridLineSoft,
                 width: cleared ? 2 : 1,
               ),
             ),
@@ -350,19 +350,19 @@ class _LevelTile extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w800,
-                            color: cleared ? color : textInk,
+                            color: cleared ? color : context.palette.textInk,
                           ),
                         ),
                         if (cleared && progress.bestTimeMs != null)
                           Text(
                             formatDurationMs(progress.bestTimeMs!),
-                            style: const TextStyle(fontSize: 10, color: textMuted),
+                            style: TextStyle(fontSize: 10, color: context.palette.textMuted),
                           )
                         else if (cleared)
                           Icon(Icons.check_rounded, size: 14, color: color),
                       ],
                     )
-                  : Icon(Icons.lock_rounded, color: textFaint, size: 20),
+                  : Icon(Icons.lock_rounded, color: context.palette.textFaint, size: 20),
             ),
           ),
         ),

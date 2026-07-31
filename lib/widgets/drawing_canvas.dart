@@ -59,6 +59,7 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
             painter: _StrokePainter(
               strokes: widget.strokes,
               active: _active == null ? null : Stroke(_active!),
+              color: context.palette.notesInk,
             ),
             size: Size.infinite,
           ),
@@ -69,15 +70,16 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
 }
 
 class _StrokePainter extends CustomPainter {
-  _StrokePainter({required this.strokes, this.active});
+  _StrokePainter({required this.strokes, required this.color, this.active});
 
   final List<Stroke> strokes;
+  final Color color;
   final Stroke? active;
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = notesInk
+      ..color = color
       ..strokeWidth = 3
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round

@@ -24,7 +24,7 @@ class MistakesIndicator extends StatelessWidget {
               height: 12,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: i < mistakes ? errorRed : gridLineSoft,
+                color: i < mistakes ? context.palette.errorRed : context.palette.gridLineSoft,
               ),
             ),
           ),
@@ -33,8 +33,8 @@ class MistakesIndicator extends StatelessWidget {
             padding: const EdgeInsets.only(left: 6),
             child: Text(
               '+$overflow',
-              style: const TextStyle(
-                color: errorRed,
+              style: TextStyle(
+                color: context.palette.errorRed,
                 fontWeight: FontWeight.w800,
               ),
             ),

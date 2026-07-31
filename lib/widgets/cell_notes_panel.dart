@@ -34,15 +34,15 @@ class CellNotesPanel extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Icon(Icons.edit_rounded, size: 15, color: textMuted),
+            Icon(Icons.edit_rounded, size: 15, color: context.palette.textMuted),
             const SizedBox(width: 6),
             Expanded(
               child: Text(
                 l10n.notesScribbleHint,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                    color: textMuted,
+                style: TextStyle(
+                    color: context.palette.textMuted,
                     fontSize: 12,
                     fontWeight: FontWeight.w600),
               ),
@@ -64,9 +64,9 @@ class CellNotesPanel extends StatelessWidget {
         Expanded(
           child: Container(
             decoration: BoxDecoration(
-              color: notesPaper,
+              color: context.palette.notesPaper,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: notesPaperBorder, width: 1.5),
+              border: Border.all(color: context.palette.notesPaperBorder, width: 1.5),
             ),
             clipBehavior: Clip.antiAlias,
             child: DrawingCanvas(strokes: strokes, onChanged: onChanged),
@@ -87,7 +87,7 @@ class _MiniAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onTap != null;
-    final color = enabled ? textInk : textFaint;
+    final color = enabled ? context.palette.textInk : context.palette.textFaint;
     return TextButton.icon(
       onPressed: onTap,
       icon: Icon(icon, size: 16, color: color),

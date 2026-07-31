@@ -257,6 +257,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsVolume => 'Volume';
 
   @override
+  String get settingsTheme => 'Appearance';
+
+  @override
   String get settingsCredits => 'Music credits';
 
   @override
@@ -264,6 +267,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageHindi => 'हिन्दी';
+
+  @override
+  String get themeSystem => 'System';
+
+  @override
+  String get themeLight => 'Light';
+
+  @override
+  String get themeDark => 'Dark';
 
   @override
   String get creditsTitle => 'Music credits';
