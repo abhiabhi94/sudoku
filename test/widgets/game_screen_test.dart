@@ -81,13 +81,12 @@ void main() {
   });
 
   testWidgets('the lockout overlay appears after a fourth mistake', (tester) async {
-    final notifier = _testNotifier(blanks: const [0, 1]);
+    final notifier = _testNotifier(blanks: kWrongBlanks);
     await _loadGame(tester, notifier);
 
-    notifier.selectCell(0);
-    final wrong = kFakeSolution[0] == 1 ? 2 : 1;
+    notifier.selectCell(kWrongCell);
     for (var i = 0; i < 4; i++) {
-      notifier.inputDigit(wrong);
+      notifier.inputDigit(kWrongDigit);
     }
     await tester.pump();
 
@@ -95,10 +94,10 @@ void main() {
   });
 
   testWidgets('the refresh button deals a new puzzle', (tester) async {
-    final notifier = _testNotifier();
+    final notifier = _testNotifier(blanks: kWrongBlanks);
     await _loadGame(tester, notifier);
-    notifier.selectCell(0);
-    notifier.inputDigit(kFakeSolution[0] == 1 ? 2 : 1); // a mistake
+    notifier.selectCell(kWrongCell);
+    notifier.inputDigit(kWrongDigit); // a mistake
     await tester.pump();
     expect(notifier.state.mistakes, 1);
 
@@ -107,6 +106,46 @@ void main() {
     await tester.pump();
     expect(notifier.state.mistakes, 0);
     expect(notifier.state.phase, GamePhase.playing);
+  });
+
+  group('same-digit highlight', () {
+    /// The pad key for [digit] (grid cells hold the same glyphs, so scope it).
+    Finder padKey(int digit) => find.descendant(
+          of: find.byType(NumberPad),
+          matching: find.text('$digit'),
+        );
+
+    testWidgets('tapping a pad digit with nothing selected highlights it',
+        (tester) async {
+      final notifier = _testNotifier(blanks: kWrongBlanks);
+      await _loadGame(tester, notifier);
+
+      expect(notifier.state.selectedIndex, -1);
+      await tester.tap(padKey(kWrongDigit));
+      await tester.pump();
+
+      expect(notifier.state.highlightDigit, kWrongDigit);
+      expect(notifier.state.activeDigit, kWrongDigit);
+      expect(notifier.state.mistakes, 0);
+    });
+
+    testWidgets('a fully-placed digit stays tappable and highlights',
+        (tester) async {
+      // Only 5 and 3 are still needed, so 1 is fully placed — previously the
+      // pad key was disabled, which is exactly the digit you want to re-check.
+      final notifier = _testNotifier(blanks: const [0, 1]);
+      await _loadGame(tester, notifier);
+      expect(notifier.state.remainingForDigit(1), 0);
+
+      notifier.selectCell(0); // empty, editable
+      await tester.pump();
+      await tester.tap(padKey(1));
+      await tester.pump();
+
+      expect(notifier.state.highlightDigit, 1);
+      expect(notifier.state.mistakes, 0);
+      expect(notifier.state.board[0], 0);
+    });
   });
 
   testWidgets('victory "Play again" dismisses the overlay', (tester) async {

@@ -1,13 +1,19 @@
-/// Looping background music that respects the user's music on/off + volume.
-/// Wraps audioplayers behind an injectable [AudioBackend] so the control logic
-/// is unit-testable without the audio plugin. No track is bundled yet, so the
-/// service stays silent until [trackAsset] points at a real CC-BY file.
+/// Looping background music that respects the user's music on/off + volume,
+/// and gets out of the way while the app is in the background. Wraps
+/// audioplayers behind an injectable [AudioBackend] so the control logic is
+/// unit-testable without the audio plugin.
 library;
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/settings.dart';
+
+/// The bundled looping track, relative to `assets/` (audioplayers' AssetSource
+/// prefixes that itself). "Permafrost" by Scott Buckley, CC-BY 4.0 — see
+/// `lib/data/audio_credits.dart`.
+const String kBackgroundTrack = 'audio/permafrost.mp3';
 
 /// Minimal audio operations the service needs.
 abstract class AudioBackend {
@@ -53,23 +59,57 @@ class AudioService {
   /// licensed track is bundled — while null the service does nothing.
   final String? trackAsset;
 
+  /// Whether the looping player has been created yet.
   bool _started = false;
 
-  /// Applies the current [settings] to playback: starts/resumes the loop when
-  /// music is on, pauses it when off, and tracks volume changes.
+  /// Whether it is currently audible — keeps pause/resume from being issued
+  /// twice, so a volume change doesn't re-resume an already-playing loop.
+  bool _playing = false;
+
+  /// True while the app is away from the foreground.
+  bool _backgrounded = false;
+
+  /// The most recent settings, replayed by [_sync] whenever the foreground
+  /// state changes. Null until the app has applied its settings once.
+  Settings? _settings;
+
+  /// Applies the current [settings] to playback. Safe to call while
+  /// backgrounded — the settings are recorded but nothing starts playing.
   Future<void> apply(Settings settings) async {
+    _settings = settings;
+    await _sync();
+  }
+
+  /// Pauses the loop whenever the app leaves the foreground (a call, the app
+  /// switcher, the screen locking) and brings it back on return.
+  Future<void> handleLifecycle(AppLifecycleState lifecycle) async {
+    _backgrounded = lifecycle != AppLifecycleState.resumed;
+    await _sync();
+  }
+
+  /// Drives the backend to match [_settings] and the foreground state. Both
+  /// entry points funnel through here so returning to the foreground *starts*
+  /// the loop when it never got going — not just resumes an existing one.
+  Future<void> _sync() async {
     final track = trackAsset;
-    if (track == null) return;
-    if (settings.musicOn) {
-      if (_started) {
-        await _backend.setVolume(settings.musicVolume);
-        await _backend.resume();
-      } else {
+    final settings = _settings;
+    if (track == null || settings == null) return;
+
+    if (settings.musicOn && !_backgrounded) {
+      if (!_started) {
         await _backend.loop(track, settings.musicVolume);
         _started = true;
+        _playing = true;
+        return;
       }
-    } else if (_started) {
+      await _backend.setVolume(settings.musicVolume);
+      if (!_playing) {
+        await _backend.resume();
+        _playing = true;
+      }
+    } else if (_playing) {
       await _backend.pause();
+      _playing = false;
     }
   }
 
@@ -77,12 +117,13 @@ class AudioService {
     if (_started) {
       await _backend.stop();
       _started = false;
+      _playing = false;
     }
   }
 }
 
 // coverage:ignore-start
 final audioServiceProvider = Provider<AudioService>(
-  (ref) => AudioService(AudioPlayersBackend()),
+  (ref) => AudioService(AudioPlayersBackend(), trackAsset: kBackgroundTrack),
 );
 // coverage:ignore-end

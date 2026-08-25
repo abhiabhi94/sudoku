@@ -70,6 +70,53 @@ void main() {
     expect(noted.copyWith(selectedIndex: 5).notesFor(0), const [stroke]);
   });
 
+  group('activeDigit', () {
+    test('is 0 when nothing is selected or highlighted', () {
+      final s = GameState.playing(1, fakePuzzle(blanks: const [0, 1]));
+      expect(s.highlightDigit, 0);
+      expect(s.activeDigit, 0);
+    });
+
+    test('follows the selected cell when it holds a value', () {
+      final s = GameState.playing(1, fakePuzzle(blanks: const [0, 1]));
+      // Cell 2 is a given holding 4.
+      expect(s.copyWith(selectedIndex: 2).activeDigit, kFakeSolution[2]);
+    });
+
+    test('falls back to the pad highlight when the selection is empty', () {
+      final s = GameState.playing(1, fakePuzzle(blanks: const [0, 1]));
+      // Cell 0 is blank, so the selection contributes nothing.
+      final withHighlight =
+          s.copyWith(selectedIndex: 0, highlightDigit: 7);
+      expect(withHighlight.activeDigit, 7);
+    });
+
+    test('a deliberate pad tap outranks a filled selection', () {
+      // selectCell clears the highlight, so a surviving one means the pad was
+      // the player's most recent word — it should win.
+      final s = GameState.playing(1, fakePuzzle(blanks: const [0, 1]));
+      final both = s.copyWith(selectedIndex: 2, highlightDigit: 7);
+      expect(both.activeDigit, 7);
+    });
+
+    test('is 0 while loading, with no board to index into', () {
+      expect(GameState.loading(1).copyWith(selectedIndex: 4).activeDigit, 0);
+    });
+
+    test('copyWith carries the highlight, and 0 clears it', () {
+      final s = GameState.playing(1, fakePuzzle(blanks: const [0, 1]))
+          .copyWith(highlightDigit: 6);
+      expect(s.copyWith(selectedIndex: 0).highlightDigit, 6);
+      expect(s.copyWith(highlightDigit: 0).highlightDigit, 0);
+    });
+
+    test('is transient — not carried into a saved game', () {
+      final s = GameState.playing(1, fakePuzzle(blanks: const [0, 1]))
+          .copyWith(highlightDigit: 6);
+      expect(GameState.restored(s.toSavedGame()).highlightDigit, 0);
+    });
+  });
+
   test('remainingForDigit counts placements left', () {
     final puzzle = fakePuzzle(blanks: const [0, 1]); // 0->5 and 1->3 missing
     final s = GameState.playing(1, puzzle);

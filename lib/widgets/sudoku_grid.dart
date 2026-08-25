@@ -20,8 +20,9 @@ class SudokuGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selected = state.selectedIndex;
-    final selectedValue =
-        selected >= 0 && state.board.isNotEmpty ? state.board[selected] : 0;
+    // The selected cell's digit, or the one tapped on the number pad when no
+    // filled cell is selected — either way, every instance of it lights up.
+    final activeValue = state.activeDigit;
     // While a hint's "Why here?" card is up, softly highlight the cells that
     // justify the placement.
     final explainCells = state.lastHint?.justifiers.toSet() ?? const <int>{};
@@ -49,8 +50,8 @@ class SudokuGrid extends StatelessWidget {
                           state: state,
                           isSelected: index == selected,
                           isPeer: selected >= 0 && _isPeer(selected, index),
-                          sameValue: selectedValue != 0 &&
-                              state.board[index] == selectedValue,
+                          sameValue: activeValue != 0 &&
+                              state.board[index] == activeValue,
                           isExplain: explainCells.contains(index),
                           // Round the four corner cells so their fill follows the
                           // board's rounded border instead of being clipped to a
@@ -148,24 +149,33 @@ class _Cell extends StatelessWidget {
     }
 
     final isError = kind == CellKind.error;
+    // Whether this cell actually wears the same-digit highlight — the louder
+    // states above it win the background, and only this one gets the ring.
+    final showsSameValue =
+        sameValue && value != 0 && !isSelected && !isError && !isExplain;
     if (isSelected) {
       background = palette.cellSelected;
     } else if (isError) {
       background = palette.cellErrorBg;
     } else if (isExplain) {
       background = palette.cellExplain;
-    } else if (sameValue && value != 0) {
-      background = palette.cellPeer;
+    } else if (showsSameValue) {
+      background = palette.cellSameValue;
     } else if (isPeer && kind != CellKind.given) {
       background = palette.cellPeer.withValues(alpha: 0.5);
     }
 
-    // A wrong entry gets a bold red outline so it's impossible to miss.
+    // A wrong entry gets a bold red outline so it's impossible to miss. The
+    // same-digit ring does the same job one step quieter: it separates "this is
+    // the number I'm scanning for" from the soft row/column/box peer wash,
+    // which otherwise shares the same tint.
     final border = isError
         ? Border.all(color: palette.errorRed, width: 1.6)
         : isExplain
             ? Border.all(color: palette.cellExplainBorder, width: 1.2)
-            : Border.all(color: palette.gridLineSoft, width: 0.5);
+            : showsSameValue
+                ? Border.all(color: palette.cellSameValueBorder, width: 1.4)
+                : Border.all(color: palette.gridLineSoft, width: 0.5);
 
     return GestureDetector(
       onTap: onTap,
@@ -184,7 +194,9 @@ class _Cell extends StatelessWidget {
                 '$value',
                 style: TextStyle(
                   fontSize: isError ? 23 : 22,
-                  fontWeight: kind == CellKind.given || isError
+                  // Highlighted digits also go bold — the whole point is to
+                  // pick them out of the grid at a glance.
+                  fontWeight: kind == CellKind.given || isError || showsSameValue
                       ? FontWeight.w800
                       : FontWeight.w600,
                   color: textColor,

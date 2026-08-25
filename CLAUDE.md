@@ -132,9 +132,11 @@ whenever you upgrade the toolchain.
 
 ## Pending follow-ups
 
-- **Music tracks:** audio system + settings + credits screen are wired, but no
-  track is bundled. Drop CC-BY files in `assets/audio/`, set `trackAsset` in
-  `AudioService`, and list attributions in `lib/data/audio_credits.dart`.
+- **More music tracks:** one looping track is bundled — "Permafrost" by Scott
+  Buckley (CC-BY 4.0), `kBackgroundTrack` in `services/audio_service.dart`,
+  credited in `data/audio_credits.dart`. Adding more means extending
+  `AudioService` past its single `trackAsset`. Use `.mp3`/AAC, never `.ogg`
+  (iOS can't decode Vorbis via audioplayers).
 - **App icon:** still the default Flutter icon (`flutter_launcher_icons` is a
   dev dependency, ready for an `assets/logo.png`).
 - **iOS:** code is iOS-ready; the matching iOS scheme needs Xcode (not set up here).

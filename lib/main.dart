@@ -23,13 +23,42 @@ Future<void> main() async {
   );
 }
 
-class SudokuApp extends ConsumerWidget {
+class SudokuApp extends ConsumerStatefulWidget {
   const SudokuApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Keep background music in sync with the music/volume settings. (No-op
-    // until a licensed track is bundled into AudioService.)
+  ConsumerState<SudokuApp> createState() => _SudokuAppState();
+}
+
+class _SudokuAppState extends ConsumerState<SudokuApp>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // ref.listen below only fires on a *change*, so the persisted settings have
+    // to be applied once explicitly or music never starts on a cold launch.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(audioServiceProvider).apply(ref.read(settingsProvider));
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Don't keep playing over a phone call, another app, or a locked screen.
+    ref.read(audioServiceProvider).handleLifecycle(state);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Keep background music in sync with the music/volume settings.
     ref.listen(settingsProvider, (_, next) {
       ref.read(audioServiceProvider).apply(next);
     });

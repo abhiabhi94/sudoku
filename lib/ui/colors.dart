@@ -45,6 +45,11 @@ const Color _lGridLineBold = Color(0xFF6C5CE7);
 const Color _lCellGiven = Color(0xFFEDEBFF);
 const Color _lCellSelected = Color(0xFFCFC8FF);
 const Color _lCellPeer = Color(0xFFF0EEFF);
+// Every cell holding the same digit as the active one. Deliberately stronger
+// than the peer wash and ringed, so "where are all my 6s?" reads at a glance
+// instead of blending into the row/column/box tint.
+const Color _lCellSameValue = Color(0xFFE4E0FF);
+const Color _lCellSameValueBorder = Color(0xFF9C90F5);
 const Color _lCellHinted = Color(0xFFD5F6E9);
 const Color _lCellHintedBorder = Color(0xFF32D296);
 const Color _lCellErrorBg = Color(0xFFFFE2E2);
@@ -102,6 +107,10 @@ const Color _dCellGiven = Color(0xFF332E54); // lighter than empty cells so
 // the pre-filled givens read as a distinct band from the empty squares.
 const Color _dCellSelected = Color(0xFF463C7A);
 const Color _dCellPeer = Color(0xFF2C2942);
+// Sits between the givens band and the selected cell so it stays distinct from
+// both; the ring carries most of the signal on dark.
+const Color _dCellSameValue = Color(0xFF3A3560);
+const Color _dCellSameValueBorder = Color(0xFF8A7BF5);
 const Color _dCellHinted = Color(0xFF163A2E);
 const Color _dCellHintedBorder = Color(0xFF2FBE86);
 const Color _dCellErrorBg = Color(0xFF3E1F27);
@@ -149,6 +158,8 @@ class SudokuPalette {
     required this.cellGiven,
     required this.cellSelected,
     required this.cellPeer,
+    required this.cellSameValue,
+    required this.cellSameValueBorder,
     required this.cellHinted,
     required this.cellHintedBorder,
     required this.cellErrorBg,
@@ -181,6 +192,8 @@ class SudokuPalette {
   final Color cellGiven;
   final Color cellSelected;
   final Color cellPeer;
+  final Color cellSameValue;
+  final Color cellSameValueBorder;
   final Color cellHinted;
   final Color cellHintedBorder;
   final Color cellErrorBg;
@@ -213,6 +226,8 @@ class SudokuPalette {
     cellGiven: _lCellGiven,
     cellSelected: _lCellSelected,
     cellPeer: _lCellPeer,
+    cellSameValue: _lCellSameValue,
+    cellSameValueBorder: _lCellSameValueBorder,
     cellHinted: _lCellHinted,
     cellHintedBorder: _lCellHintedBorder,
     cellErrorBg: _lCellErrorBg,
@@ -246,6 +261,8 @@ class SudokuPalette {
     cellGiven: _dCellGiven,
     cellSelected: _dCellSelected,
     cellPeer: _dCellPeer,
+    cellSameValue: _dCellSameValue,
+    cellSameValueBorder: _dCellSameValueBorder,
     cellHinted: _dCellHinted,
     cellHintedBorder: _dCellHintedBorder,
     cellErrorBg: _dCellErrorBg,

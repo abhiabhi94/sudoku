@@ -127,9 +127,10 @@ void main() {
       SavedGame? restore,
       void Function(SavedGame)? onPersist,
       void Function()? onFinish,
+      List<int> blanks = const [0, 1],
     }) {
       Future<GeneratedPuzzle> gen(int t, int l, int s) async =>
-          fakePuzzle(blanks: const [0, 1]);
+          fakePuzzle(blanks: blanks);
       return GameNotifier(
         globalLevel: 1,
         generator: gen,
@@ -143,12 +144,12 @@ void main() {
 
     test('persists a snapshot after each move', () async {
       final snapshots = <SavedGame>[];
-      final n = build(onPersist: snapshots.add);
+      final n = build(onPersist: snapshots.add, blanks: kWrongBlanks);
       addTearDown(n.dispose);
       await n.ready;
 
-      n.selectCell(1);
-      n.inputDigit(kFakeSolution[1] == 1 ? 2 : 1); // a wrong move
+      n.selectCell(kWrongCell);
+      n.inputDigit(kWrongDigit); // a wrong move
       expect(snapshots, isNotEmpty);
       expect(snapshots.last.mistakes, 1);
     });

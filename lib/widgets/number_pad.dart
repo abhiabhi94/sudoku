@@ -6,7 +6,8 @@ import '../models/game_state.dart';
 import '../ui/colors.dart';
 
 /// The 1–9 input pad plus erase and hint actions. Digits that are fully placed
-/// are dimmed.
+/// are dimmed but stay tappable, because a tap that can't place anything
+/// highlights every instance of that digit on the board instead.
 class NumberPad extends StatelessWidget {
   const NumberPad({
     super.key,
@@ -33,6 +34,7 @@ class NumberPad extends StatelessWidget {
                 child: _DigitButton(
                   digit: d,
                   remaining: state.remainingForDigit(d),
+                  isHighlighted: state.activeDigit == d,
                   onTap: () => onDigit(d),
                 ),
               ),
@@ -69,33 +71,54 @@ class _DigitButton extends StatelessWidget {
   const _DigitButton({
     required this.digit,
     required this.remaining,
+    required this.isHighlighted,
     required this.onTap,
   });
 
   final int digit;
   final int remaining;
+
+  /// Whether this digit is the one currently lit up across the board.
+  final bool isHighlighted;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     final done = remaining <= 0;
+    // A finished digit is dimmed but still tappable: it's the one you most want
+    // to highlight to check your work, and the provider routes the tap to the
+    // highlight rather than letting it become a tenth wrong placement.
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 2),
       child: AspectRatio(
         aspectRatio: 0.82,
         child: Material(
-          color: done ? context.palette.backgroundSoft : context.palette.surfaceWhite,
+          color: isHighlighted
+              ? palette.cellSameValue
+              : done
+                  ? palette.backgroundSoft
+                  : palette.surfaceWhite,
           borderRadius: BorderRadius.circular(14),
           child: InkWell(
             borderRadius: BorderRadius.circular(14),
-            onTap: done ? null : onTap,
-            child: Center(
+            onTap: onTap,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                border: isHighlighted
+                    ? Border.all(color: palette.cellSameValueBorder, width: 1.6)
+                    : null,
+              ),
+              alignment: Alignment.center,
               child: Text(
                 '$digit',
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w800,
-                  color: done ? context.palette.textFaint : context.palette.userDigit,
+                  color: done && !isHighlighted
+                      ? palette.textFaint
+                      : palette.userDigit,
                 ),
               ),
             ),

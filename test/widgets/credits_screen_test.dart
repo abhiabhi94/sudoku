@@ -30,4 +30,23 @@ void main() {
     expect(find.textContaining('Test Artist'), findsOneWidget);
     expect(find.textContaining('CC BY 4.0'), findsOneWidget);
   });
+
+  testWidgets('credits the bundled track, as CC-BY requires', (tester) async {
+    await pumpApp(tester, const CreditsScreen());
+    await tester.pump();
+    expect(find.text('Permafrost'), findsOneWidget);
+    expect(find.textContaining('Scott Buckley'), findsOneWidget);
+    expect(find.textContaining('CC BY 4.0'), findsOneWidget);
+    expect(find.textContaining('scottbuckley.com.au'), findsOneWidget);
+  });
+
+  test('every bundled track carries a full attribution', () {
+    expect(audioCredits, isNotEmpty);
+    for (final credit in audioCredits) {
+      expect(credit.title, isNotEmpty);
+      expect(credit.artist, isNotEmpty);
+      expect(credit.license, isNotEmpty);
+      expect(credit.sourceUrl, isNotEmpty);
+    }
+  });
 }

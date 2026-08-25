@@ -1,5 +1,5 @@
 /// Attribution entries for bundled background music (CC-BY requires crediting
-/// each track). Populated in the polish stage when licensed tracks are added.
+/// each track).
 library;
 
 class TrackCredit {
@@ -16,5 +16,14 @@ class TrackCredit {
   final String sourceUrl;
 }
 
-/// The bundled tracks and their attributions. Empty until tracks are added.
-const List<TrackCredit> audioCredits = <TrackCredit>[];
+/// The bundled tracks and their attributions. The artist's required credit line
+/// is: "'Permafrost' by Scott Buckley - released under CC-BY 4.0.
+/// www.scottbuckley.com.au".
+const List<TrackCredit> audioCredits = <TrackCredit>[
+  TrackCredit(
+    title: 'Permafrost',
+    artist: 'Scott Buckley',
+    license: 'CC BY 4.0',
+    sourceUrl: 'www.scottbuckley.com.au',
+  ),
+];

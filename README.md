@@ -10,6 +10,9 @@ A modern, playful cross-platform (Android + iOS) Sudoku game built with Flutter.
   every time** you open a level.
 - **Forgiving mistakes**: 3 wrong placements are free; a 4th triggers a playful
   3–5 second "you're guessing 👀" lockout.
+- **Same-digit highlight**: tap a cell — or a number-pad key with nothing
+  selected — to ring every instance of that digit, so you can see at a glance
+  where a number still needs placing. Tap the same key again to clear it.
 - **Riddle-gated hints**: solve a word riddle (10 per language) to reveal one
   logically-deducible cell. A wrong answer offers another riddle.
 - **Progress**: games completed, best time per level, and level unlocking.
@@ -72,9 +75,10 @@ marked with `// coverage:ignore`. Current hand-written coverage is ~97%
 
 ## Follow-ups
 
-- **Music tracks**: `AudioService` + the settings toggles + the credits screen
-  are wired, but no track is bundled yet. Drop CC-BY `.mp3`/`.ogg` files into
-  `assets/audio/`, set `trackAsset` in `AudioService`, and list attributions in
+- **More music tracks**: one looping track is bundled ("Permafrost" by Scott
+  Buckley, CC-BY 4.0). To add more, drop `.mp3` files into `assets/audio/`
+  (not `.ogg` — iOS can't decode Vorbis through audioplayers), extend
+  `AudioService` beyond its single `trackAsset`, and add attributions to
   `lib/data/audio_credits.dart`.
 - **App icon**: still the default Flutter icon (`flutter_launcher_icons` is a
   dev dependency, ready to configure with an `assets/logo.png`).

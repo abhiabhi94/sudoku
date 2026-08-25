@@ -30,6 +30,7 @@ class GameState {
     required this.lockoutRemainingMs,
     this.cellNotes = const <int, List<Stroke>>{},
     this.lastHint,
+    this.highlightDigit = 0,
   });
 
   final int globalLevel;
@@ -70,6 +71,27 @@ class GameState {
   /// The most recent hint's justification (for the "Why here?" card). Transient
   /// UI state — not persisted, cleared on the next move or selection.
   final HintExplanation? lastHint;
+
+  /// Digit (1..9) the player asked to see highlighted from the number pad, or
+  /// 0 for none. Set only when the pad tap isn't placing anything, so it never
+  /// competes with the selected cell. Transient UI state — not persisted.
+  final int highlightDigit;
+
+  /// The digit whose every instance the board should highlight, or 0 for none.
+  ///
+  /// Whichever the player asked for most recently wins: [highlightDigit] is
+  /// only ever set by a deliberate pad tap and is cleared the moment a cell is
+  /// selected, so a non-zero one means the pad was the last word. Otherwise the
+  /// selected cell's own value drives it.
+  int get activeDigit {
+    if (highlightDigit != 0) return highlightDigit;
+    if (selectedIndex >= 0 &&
+        selectedIndex < board.length &&
+        board[selectedIndex] != 0) {
+      return board[selectedIndex];
+    }
+    return 0;
+  }
 
   /// Initial loading state for [level].
   factory GameState.loading(int level) => GameState(
@@ -178,6 +200,7 @@ class GameState {
     Map<int, List<Stroke>>? cellNotes,
     HintExplanation? lastHint,
     bool clearHint = false,
+    int? highlightDigit,
   }) {
     return GameState(
       globalLevel: globalLevel,
@@ -193,6 +216,9 @@ class GameState {
       lockoutRemainingMs: lockoutRemainingMs ?? this.lockoutRemainingMs,
       cellNotes: cellNotes ?? this.cellNotes,
       lastHint: clearHint ? null : (lastHint ?? this.lastHint),
+      // 0 is the "none" sentinel, so an explicit 0 clears the highlight without
+      // needing a separate flag (unlike the nullable lastHint).
+      highlightDigit: highlightDigit ?? this.highlightDigit,
     );
   }
 }

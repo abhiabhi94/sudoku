@@ -128,7 +128,13 @@ class GameNotifier extends StateNotifier<GameState> {
 
   void selectCell(int index) {
     if (state.phase != GamePhase.playing) return;
-    state = state.copyWith(selectedIndex: index, clearHint: true);
+    // The selected cell drives the same-digit highlight from here on, so drop
+    // any pad-driven one rather than letting the two fight.
+    state = state.copyWith(
+      selectedIndex: index,
+      clearHint: true,
+      highlightDigit: 0,
+    );
     haptics?.tap();
   }
 
@@ -145,10 +151,23 @@ class GameNotifier extends StateNotifier<GameState> {
     }
   }
 
+  /// Places [digit] in the selected cell, or — when the tap can't place
+  /// anything — highlights every instance of it instead (see [toggleHighlight]).
   void inputDigit(int digit) {
-    if (state.phase != GamePhase.playing) return;
+    if (state.phase == GamePhase.loading || state.phase == GamePhase.solved) {
+      return;
+    }
     final index = state.selectedIndex;
-    if (index < 0 || !state.isEditable(index)) return;
+    // A fully-placed digit can't legally go anywhere, so a tap on it is always
+    // a "show me" — this also keeps the old guard against entering a tenth 9.
+    final canPlace = state.phase == GamePhase.playing &&
+        index >= 0 &&
+        state.isEditable(index) &&
+        state.remainingForDigit(digit) > 0;
+    if (!canPlace) {
+      toggleHighlight(digit);
+      return;
+    }
 
     final puzzle = state.puzzle!;
     final board = List<int>.of(state.board)..[index] = digit;
@@ -163,6 +182,7 @@ class GameNotifier extends StateNotifier<GameState> {
         errorCells: errors,
         phase: solved ? GamePhase.solved : GamePhase.playing,
         clearHint: true,
+        highlightDigit: 0,
       );
       if (solved) {
         _handleSolved();
@@ -182,6 +202,7 @@ class GameNotifier extends StateNotifier<GameState> {
           phase: GamePhase.lockedOut,
           lockoutRemainingMs: seconds * 1000,
           clearHint: true,
+          highlightDigit: 0,
         );
         haptics?.lockout();
       } else {
@@ -190,10 +211,26 @@ class GameNotifier extends StateNotifier<GameState> {
           errorCells: errors,
           mistakes: mistakes,
           clearHint: true,
+          highlightDigit: 0,
         );
       }
       _persist();
     }
+  }
+
+  /// Highlights every instance of [digit] on the board, or clears the
+  /// highlight when [digit] is already the highlighted one (so the same pad key
+  /// toggles it off). Purely a scanning aid — it reveals nothing that isn't
+  /// already on screen, so it stays available during the lockout.
+  void toggleHighlight(int digit) {
+    if (state.phase == GamePhase.loading || state.phase == GamePhase.solved) {
+      return;
+    }
+    state = state.copyWith(
+      highlightDigit: state.highlightDigit == digit ? 0 : digit,
+      clearHint: true,
+    );
+    haptics?.tap();
   }
 
   /// Replaces the scribble notes for [index]. The panel owns the stroke list,
@@ -220,6 +257,7 @@ class GameNotifier extends StateNotifier<GameState> {
       board: List<int>.of(state.board)..[index] = 0,
       errorCells: Set<int>.of(state.errorCells)..remove(index),
       clearHint: true,
+      highlightDigit: 0,
     );
     _persist();
   }
@@ -255,6 +293,7 @@ class GameNotifier extends StateNotifier<GameState> {
       hintsUsed: state.hintsUsed + 1,
       phase: solved ? GamePhase.solved : GamePhase.playing,
       lastHint: explanation,
+      highlightDigit: 0,
     );
     if (solved) {
       _handleSolved();

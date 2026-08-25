@@ -51,16 +51,15 @@ void main() {
   });
 
   test('a wrong digit records a mistake and marks the cell', () async {
-    final n = makeNotifier();
+    final n = makeNotifier(blanks: kWrongBlanks);
     addTearDown(n.dispose);
     await n.ready;
 
-    n.selectCell(0);
-    final wrong = kFakeSolution[0] == 1 ? 2 : 1;
-    n.inputDigit(wrong);
+    n.selectCell(kWrongCell);
+    n.inputDigit(kWrongDigit);
     expect(n.state.mistakes, 1);
-    expect(n.state.errorCells, contains(0));
-    expect(n.state.cellKind(0), CellKind.error);
+    expect(n.state.errorCells, contains(kWrongCell));
+    expect(n.state.cellKind(kWrongCell), CellKind.error);
   });
 
   test('cannot edit a given cell', () async {
@@ -74,32 +73,32 @@ void main() {
   });
 
   test('erase clears a filled editable cell', () async {
-    final n = makeNotifier();
+    final n = makeNotifier(blanks: kWrongBlanks);
     addTearDown(n.dispose);
     await n.ready;
-    n.selectCell(0);
-    n.inputDigit(kFakeSolution[0] == 1 ? 2 : 1); // wrong
+    n.selectCell(kWrongCell);
+    n.inputDigit(kWrongDigit); // wrong
+    expect(n.state.board[kWrongCell], kWrongDigit);
     n.erase();
-    expect(n.state.board[0], 0);
+    expect(n.state.board[kWrongCell], 0);
     expect(n.state.errorCells, isEmpty);
   });
 
   test('a fourth wrong placement triggers the lockout', () async {
-    final n = makeNotifier();
+    final n = makeNotifier(blanks: kWrongBlanks);
     addTearDown(n.dispose);
     await n.ready;
 
-    n.selectCell(0);
-    final wrong = kFakeSolution[0] == 1 ? 2 : 1;
+    n.selectCell(kWrongCell);
     for (var i = 0; i < 4; i++) {
-      n.inputDigit(wrong);
+      n.inputDigit(kWrongDigit);
     }
     expect(n.state.mistakes, 4);
     expect(n.state.phase, GamePhase.lockedOut);
     expect(n.state.lockoutRemainingMs, inInclusiveRange(3000, 5000));
 
-    // Input is ignored while locked out.
-    n.inputDigit(wrong);
+    // Placement is ignored while locked out (the tap only highlights).
+    n.inputDigit(kWrongDigit);
     expect(n.state.mistakes, 4);
 
     // Ticking counts the lockout down, not the play clock.
@@ -186,12 +185,124 @@ void main() {
     });
   });
 
+  group('same-digit highlight', () {
+    test('a pad tap with nothing selected highlights instead of placing',
+        () async {
+      final n = makeNotifier(blanks: kWrongBlanks);
+      addTearDown(n.dispose);
+      await n.ready;
+
+      expect(n.state.selectedIndex, -1);
+      n.inputDigit(kWrongDigit);
+      expect(n.state.highlightDigit, kWrongDigit);
+      expect(n.state.activeDigit, kWrongDigit);
+      expect(n.state.mistakes, 0);
+      expect(n.state.board, fakePuzzle(blanks: kWrongBlanks).givens);
+    });
+
+    test('tapping the same digit again toggles the highlight off', () async {
+      final n = makeNotifier(blanks: kWrongBlanks);
+      addTearDown(n.dispose);
+      await n.ready;
+
+      n.inputDigit(4);
+      expect(n.state.highlightDigit, 4);
+      n.inputDigit(4);
+      expect(n.state.highlightDigit, 0);
+      // A different digit replaces rather than clears.
+      n.inputDigit(4);
+      n.inputDigit(6);
+      expect(n.state.highlightDigit, 6);
+    });
+
+    test('selecting a cell hands the highlight back to the selection',
+        () async {
+      final n = makeNotifier(blanks: kWrongBlanks);
+      addTearDown(n.dispose);
+      await n.ready;
+
+      n.inputDigit(4);
+      expect(n.state.highlightDigit, 4);
+      n.selectCell(2); // a given holding 4's neighbour
+      expect(n.state.highlightDigit, 0);
+      expect(n.state.activeDigit, kFakeSolution[2]);
+    });
+
+    test('a fully-placed digit highlights rather than becoming a mistake',
+        () async {
+      // The default fixture leaves every digit but 5 and 3 fully placed.
+      final n = makeNotifier(blanks: const [0, 1]);
+      addTearDown(n.dispose);
+      await n.ready;
+
+      n.selectCell(0); // empty and editable
+      expect(n.state.remainingForDigit(1), 0);
+      n.inputDigit(1);
+      expect(n.state.mistakes, 0);
+      expect(n.state.board[0], 0);
+      expect(n.state.highlightDigit, 1);
+    });
+
+    test('stays available during the lockout — looking is not playing',
+        () async {
+      final n = makeNotifier(blanks: kWrongBlanks);
+      addTearDown(n.dispose);
+      await n.ready;
+
+      n.selectCell(kWrongCell);
+      for (var i = 0; i < 4; i++) {
+        n.inputDigit(kWrongDigit);
+      }
+      expect(n.state.phase, GamePhase.lockedOut);
+
+      n.inputDigit(6);
+      expect(n.state.highlightDigit, 6);
+      expect(n.state.mistakes, 4); // still no new mistake
+    });
+
+    test('placing a digit clears a stale highlight', () async {
+      final n = makeNotifier(blanks: kWrongBlanks);
+      addTearDown(n.dispose);
+      await n.ready;
+
+      n.inputDigit(4); // highlight, nothing selected
+      n.selectCell(kWrongCell);
+      n.inputDigit(kFakeSolution[kWrongCell]);
+      expect(n.state.highlightDigit, 0);
+    });
+
+    test('a pad tap overrides the digit a filled selection was showing',
+        () async {
+      final n = makeNotifier(blanks: kWrongBlanks);
+      addTearDown(n.dispose);
+      await n.ready;
+
+      n.selectCell(2); // a given, so nothing can be placed here
+      expect(n.state.activeDigit, kFakeSolution[2]);
+
+      n.inputDigit(6);
+      expect(n.state.activeDigit, 6);
+    });
+
+    test('is ignored once the puzzle is solved', () async {
+      final n = makeNotifier(blanks: const [0]);
+      addTearDown(n.dispose);
+      await n.ready;
+
+      n.selectCell(0);
+      n.inputDigit(kFakeSolution[0]);
+      expect(n.state.phase, GamePhase.solved);
+      n.inputDigit(7);
+      expect(n.state.highlightDigit, 0);
+    });
+  });
+
   test('newPuzzle regenerates and resets state', () async {
-    final n = makeNotifier();
+    final n = makeNotifier(blanks: kWrongBlanks);
     addTearDown(n.dispose);
     await n.ready;
-    n.selectCell(0);
-    n.inputDigit(kFakeSolution[0] == 1 ? 2 : 1); // a mistake
+    n.selectCell(kWrongCell);
+    n.inputDigit(kWrongDigit); // a mistake
     expect(n.state.mistakes, 1);
 
     await n.newPuzzle();
