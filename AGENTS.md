@@ -157,12 +157,11 @@ build of any push or PR can be downloaded from the run's Actions page.
 
 `.github/workflows/codex-review.yml` runs an automated Codex review when a
 PR is opened, marked ready for review, or labelled `codex-review` (re-add the
-label to re-run on a later push). It is a thin caller of the reusable
-`codex-review-reusable.yml` next to it, which any other repo can call as
-`abhiabhi94/sudoku/.github/workflows/codex-review-reusable.yml@main`. It
-needs the `OPENAI_API_KEY` repository secret. Codex loads this file on its
-own, so the review is judged against the "Code review" section below;
-nothing repo-specific lives in either workflow.
+label to re-run on a later push). It is a thin caller of the account-wide
+reusable workflow in `abhiabhi94/.github` (`codex-review-reusable.yml`), the
+same file in every repo. It needs the `OPENAI_API_KEY` repository secret.
+Codex loads this file on its own, so the review is judged against the
+"Code review" section below; nothing repo-specific lives in the workflow.
 
 A separate workflow, `.github/workflows/pages.yml`, runs on every push to
 `main` (and manually via workflow_dispatch): it builds the release web app

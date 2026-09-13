@@ -52,8 +52,7 @@ flutter build apk --debug --split-per-abi --target-platform android-arm64   # ~6
 | `.github/actions/web-smoke/action.yml` | Composite action: build web, run the driver, upload `shots/`. Used by the `smoke` job in `ci.yml`. |
 | `assets/fonts/` + `pubspec.yaml` `fonts:` block | Google Sans Flex bundled as a regular Flutter font family, so nothing is fetched at runtime (offline-safe on phones too). |
 | `.github/workflows/pages.yml` | Deploys the release web build to GitHub Pages on every push to `main` (base href derived from the repo name). |
-| `.github/workflows/codex-review-reusable.yml` | Reusable (`workflow_call`) Codex PR review: `openai/codex-action` in the read-only profile, one PR comment. Inputs `label`, `model`, `effort`, `extra-instructions`; secret `OPENAI_API_KEY`. The prompt only points at the calling repo's `AGENTS.md`. |
-| `.github/workflows/codex-review.yml` | This repo's 15-line caller (open / ready-for-review / `codex-review` label). Other repos copy this file and change `uses:` to `abhiabhi94/sudoku/.github/workflows/codex-review-reusable.yml@main`. |
+| `.github/workflows/codex-review.yml` | 15-line caller of the account-wide reusable Codex review in `abhiabhi94/.github` (open / ready-for-review / `codex-review` label). Identical in every repo; the reusable workflow's README lists its inputs. |
 | `web/` | Web platform scaffold (`flutter create --platforms=web .`). |
 
 ## Porting to another Flutter game repo — checklist
@@ -77,15 +76,12 @@ flutter build apk --debug --split-per-abi --target-platform android-arm64   # ~6
      Give tappable widgets a `Semantics(label: …, button: true)` or a
      `tooltip:` so the driver can find them; run `--dump` to list them.
 5. Adjust the default `runs:` lines in the composite action to your levels.
-6. Codex review: copy `.github/workflows/codex-review.yml`, change its
-   `uses:` line to
-   `abhiabhi94/sudoku/.github/workflows/codex-review-reusable.yml@main`,
-   and add the `OPENAI_API_KEY` secret to that repo (personal accounts have
-   no shared secrets). Keep the guidelines in `AGENTS.md` (with a "Code
+6. Codex review: copy `.github/workflows/codex-review.yml` unchanged and
+   add the `OPENAI_API_KEY` secret to that repo (personal accounts have no
+   shared secrets). Keep the guidelines in `AGENTS.md` (with a "Code
    review" section) and make `CLAUDE.md` a shim whose first line is
-   `@AGENTS.md`; the workflow has nothing repo-specific in it. To host the
-   reusable workflow account-wide, move it to a public `<user>/.github`
-   repo under the same path and point the callers there.
+   `@AGENTS.md`; the workflow has nothing repo-specific in it. The reusable
+   workflow itself lives in `abhiabhi94/.github`.
 
 ## Gotchas worth remembering
 
