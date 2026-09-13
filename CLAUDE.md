@@ -25,12 +25,30 @@ flutter analyze                 # static analysis (must be clean)
 flutter test                    # full test suite
 tool/coverage.sh 92             # coverage gate (fails under threshold; ~97% today)
 
+flutter build web --debug --no-web-resources-cdn   # web build (debug = all levels unlocked)
+node tool/screenshot.mjs --levels 1,11,21 --settings  # phone-viewport screenshots -> shots/
+
 flutter run                     # debug build = "Sudoku Testing", all levels unlocked
 flutter run --release           # release build = "Sudoku", locked progression
 flutter build apk --debug       # -> build/app/outputs/flutter-apk/app-debug.apk
 flutter build apk --release     # -> app-release.apk (upload-key signed if key.properties present)
 flutter build appbundle --release  # -> build/app/outputs/bundle/release/app-release.aab (for Play Store)
 ```
+
+## Cloud sessions & visual verification
+
+Claude Code on the web has no Android emulator (no KVM). The stand-in is the
+**web build + headless Chromium**: `tool/screenshot.mjs` serves `build/web`,
+drives the app (home, settings, any level, EN/HI, light/dark) at 390×844 and
+writes PNGs to `shots/`; it exits 1 on any Flutter exception, so it doubles
+as the CI smoke test (`.github/actions/web-smoke`, job "Web smoke &
+screenshots"). See `.claude/skills/run/SKILL.md` and `docs/cloud-dev.md`
+(porting checklist for other repos). The SessionStart hook in
+`.claude/hooks/session-start.sh` installs the SDK pinned in `.flutter-version`.
+
+The web target is a verification/preview target; the shipped platforms are
+still Android + iOS. Nunito is bundled in `assets/fonts/` (google_fonts
+resolves it from assets, no runtime fetch).
 
 ## Build types (no flavors)
 
@@ -106,8 +124,10 @@ Key patterns:
 ## Continuous Integration
 
 GitHub Actions runs on every push to `main` and every PR targeting `main`
-(`.github/workflows/ci.yml`). It pins Flutter **3.44.8 / stable** (match
-`.metadata`; bump both together) and runs the same gates you run locally:
+(`.github/workflows/ci.yml`). Flutter is pinned in **`.flutter-version`**
+(3.44.8 / stable — match `.metadata`; bump both together; the session-start
+hook reads the same file). Job "Analyze & test" runs the same gates you run
+locally:
 
 ```
 flutter pub get
@@ -118,8 +138,12 @@ bash tool/coverage.sh 92           # coverage gate — fails under 92%
 
 The coverage gate is enforced in CI, so a PR that drops line coverage below
 **92%** (excluding generated l10n, `main.dart`, and `// coverage:ignore` glue)
-is red and cannot merge. Keep the CI Flutter version in sync with `.metadata`
+is red and cannot merge. Keep `.flutter-version` in sync with `.metadata`
 whenever you upgrade the toolchain.
+
+Job "Web smoke & screenshots" builds the web app, drives it in headless
+Chromium (`tool/screenshot.mjs`), fails on any Flutter exception, and uploads
+`shots/` as the `screenshots` artifact for visual review.
 
 ## Conventions
 

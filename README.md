@@ -46,7 +46,14 @@ flutter run                 # debug — "Sudoku Testing", all levels open
 flutter run --release       # release — "Sudoku", locked progression
 flutter build apk --debug   # -> app-debug.apk   ("Sudoku Testing")
 flutter build apk --release # -> app-release.apk  ("Sudoku")
+
+flutter build web --debug --no-web-resources-cdn   # web preview build (all levels open)
+node tool/screenshot.mjs --levels 1,11,21 --settings  # phone-size screenshots -> shots/
 ```
+
+The web build is a preview/verification target (used by CI and cloud dev
+sessions to screenshot every screen — see `docs/cloud-dev.md`); the shipped
+platforms are Android and iOS.
 
 ## Publishing (Play Store)
 
