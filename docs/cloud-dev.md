@@ -12,12 +12,33 @@ Flutter game repo (e.g. the arrow game) to get the same workflow.
 | `flutter analyze` / `flutter test` | ✅     | Same gates as CI, incl. `tool/coverage.sh` |
 | Web build + headless Chromium      | ✅     | `tool/screenshot.mjs` — phone-viewport screenshots + smoke test |
 | Android emulator                   | ❌     | No `/dev/kvm`; an emulator would not boot usably |
-| Android APK build                  | ⚠️     | Possible (dl.google.com is reachable) but needs a ~2 GB SDK install; not set up |
+| Android APK build                  | ⚠️     | Works after a one-off ~3 GB SDK install (see below); CI's `apk` job is the easy route |
 | iOS build                          | ❌     | Needs macOS/Xcode |
 
 So the loop is: change code → `flutter build web --debug --no-web-resources-cdn`
 → `node tool/screenshot.mjs --levels …` → read the PNGs. CI runs the same
 script and uploads the screenshots as an artifact.
+
+## Building an APK in a cloud session
+
+CI's `apk` job (`.github/workflows/ci.yml`) is the normal way to get a
+testable build: every push/PR uploads the arm64 "Sudoku Testing" APK as the
+`sudoku-testing-debug-apk` artifact. A debug APK is ~90 MB (Dart kernel blob
++ debug engine), too big for the session's file hand-off, so building in the
+container is only worth it for checking that the Android build still
+compiles. If needed (Java 21 is preinstalled, dl.google.com is reachable):
+
+```bash
+mkdir -p /opt/android-sdk/cmdline-tools && cd /opt/android-sdk/cmdline-tools
+curl -fsSL -o t.zip https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip
+unzip -q t.zip && rm t.zip && mv cmdline-tools latest
+export ANDROID_HOME=/opt/android-sdk
+yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses >/dev/null
+$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" \
+  "platforms;android-36" "build-tools;36.0.0" "ndk;28.2.13676358"   # versions from FlutterExtension.kt
+flutter config --android-sdk $ANDROID_HOME
+flutter build apk --debug --split-per-abi --target-platform android-arm64   # ~6 min first time
+```
 
 ## Files that make this work
 

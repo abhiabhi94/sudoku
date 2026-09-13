@@ -146,6 +146,10 @@ Job "Web smoke & screenshots" builds the web app, drives it in headless
 Chromium (`tool/screenshot.mjs`), fails on any Flutter exception, and uploads
 `shots/` as the `screenshots` artifact for visual review.
 
+Job "Android debug APK" builds the arm64 "Sudoku Testing" APK and uploads it
+as the `sudoku-testing-debug-apk` artifact (14-day retention), so a testable
+build of any push or PR can be downloaded from the run's Actions page.
+
 ## Conventions
 
 - Dart `^3.12.2`, Material 3, `useMaterial3: true`; stock `flutter_lints` (no overrides).
