@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'colors.dart';
+
+/// The app's typeface, bundled in `assets/fonts/` and declared in
+/// pubspec.yaml. Google Sans Flex: clean, geometric, and available in every
+/// weight the UI uses (300-900) without any runtime fetch.
+const String kAppFontFamily = 'Google Sans Flex';
 
 /// The app's light theme (the default look).
 ThemeData buildLightTheme() =>
@@ -11,7 +15,7 @@ ThemeData buildLightTheme() =>
 ThemeData buildDarkTheme() => _buildTheme(SudokuPalette.dark, Brightness.dark);
 
 /// Builds the app's Material 3 theme — rounded, friendly, and colourful.
-/// Uses Nunito (rounded, warm) for a playful feel while staying readable.
+/// Uses Google Sans Flex ([kAppFontFamily]) for a clean, modern feel.
 /// [p] supplies the brightness-specific colour tokens.
 ThemeData _buildTheme(SudokuPalette p, Brightness brightness) {
   final colorScheme = ColorScheme.fromSeed(
@@ -24,10 +28,11 @@ ThemeData _buildTheme(SudokuPalette p, Brightness brightness) {
     surface: p.surfaceWhite,
   );
 
-  final textTheme = GoogleFonts.nunitoTextTheme().apply(
-    bodyColor: p.textInk,
-    displayColor: p.textInk,
-  );
+  final textTheme = ThemeData(
+    brightness: brightness,
+    useMaterial3: true,
+    fontFamily: kAppFontFamily,
+  ).textTheme.apply(bodyColor: p.textInk, displayColor: p.textInk);
 
   return ThemeData(
     useMaterial3: true,
@@ -35,6 +40,7 @@ ThemeData _buildTheme(SudokuPalette p, Brightness brightness) {
     colorScheme: colorScheme,
     scaffoldBackgroundColor: p.backgroundSoft,
     textTheme: textTheme,
+    fontFamily: kAppFontFamily,
     appBarTheme: AppBarTheme(
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -51,7 +57,11 @@ ThemeData _buildTheme(SudokuPalette p, Brightness brightness) {
       style: FilledButton.styleFrom(
         backgroundColor: p.primaryIndigo,
         foregroundColor: Colors.white,
-        textStyle: GoogleFonts.nunito(fontWeight: FontWeight.w800, fontSize: 18),
+        textStyle: const TextStyle(
+          fontFamily: kAppFontFamily,
+          fontWeight: FontWeight.w800,
+          fontSize: 18,
+        ),
         padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
@@ -59,13 +69,17 @@ ThemeData _buildTheme(SudokuPalette p, Brightness brightness) {
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: p.primaryIndigo,
-        textStyle: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+        textStyle: const TextStyle(
+          fontFamily: kAppFontFamily,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     ),
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
       backgroundColor: p.textInk,
-      contentTextStyle: GoogleFonts.nunito(
+      contentTextStyle: TextStyle(
+        fontFamily: kAppFontFamily,
         color: p.surfaceWhite,
         fontWeight: FontWeight.w600,
       ),

@@ -23,7 +23,7 @@
 // wrapped in Semantics(label: …, button: true) / any IconButton(tooltip: …) is
 // reachable with getByRole. `--dump` prints what is reachable on the screen.
 //
-// Fonts: the app bundles Nunito (assets/fonts/), but the engine still fetches
+// Fonts: the app bundles Google Sans Flex (assets/fonts/), but the engine still fetches
 // *fallback* fonts (emoji, Devanagari, …) from fonts.gstatic.com at runtime.
 // Headless Chromium cannot reach that host through the cloud egress proxy, so
 // the local server mirrors it at /__fonts/ (fetched by Node, which can, and

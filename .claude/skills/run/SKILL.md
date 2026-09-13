@@ -32,7 +32,7 @@ run `.claude/hooks/session-start.sh` with `CLAUDE_CODE_REMOTE=true`.
   overflow) or a JS error while being driven — treat that as a failing test.
   CI runs the same script via `.github/actions/web-smoke` (see `ci.yml`,
   job "Web smoke & screenshots") and uploads `shots/` as an artifact.
-- Rendering is faithful: Nunito ships in `assets/fonts/`, CanvasKit is
+- Rendering is faithful: Google Sans Flex ships in `assets/fonts/`, CanvasKit is
   bundled by `--no-web-resources-cdn`, and emoji/Devanagari fallback fonts are
   mirrored through the script's local server (cached in `build/font-cache/`).
 
