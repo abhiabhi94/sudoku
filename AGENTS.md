@@ -1,7 +1,7 @@
 # AGENTS.md
 
 Guidelines for every coding agent that works on this repository. This is the
-single source of truth: Codex (CLI and the Codex review workflow) reads
+single source of truth: PR-Agent (the PR review workflow) and Codex CLI read
 `AGENTS.md` natively, Claude Code reads it through the `@AGENTS.md` import in
 `CLAUDE.md`, and any other tool that supports `AGENTS.md` picks it up as is.
 Edit this file only; do not duplicate its content into per-agent files.
@@ -155,13 +155,16 @@ Job "Android debug APK" builds the arm64 "Sudoku Testing" APK and uploads it
 as the `sudoku-testing-debug-apk` artifact (14-day retention), so a testable
 build of any push or PR can be downloaded from the run's Actions page.
 
-`.github/workflows/codex-review.yml` runs an automated Codex review when a
-PR is opened, marked ready for review, or labelled `codex-review` (re-add the
-label to re-run on a later push). It is a thin caller of the account-wide
-reusable workflow in `abhiabhi94/.github` (`codex-review-reusable.yml`), the
-same file in every repo. It needs the `OPENAI_API_KEY` repository secret.
-Codex loads this file on its own, so the review is judged against the
-"Code review" section below; nothing repo-specific lives in the workflow.
+`.github/workflows/pr-review.yml` runs an automated AI review (PR-Agent via
+OpenRouter) when a PR is opened, reopened, or marked ready for review;
+comment `/review`, `/improve`, `/describe`, or `/ask <question>` on the PR
+to run a tool on demand (for example after new pushes). It is a thin caller
+of the account-wide reusable workflow in `abhiabhi94/.github`
+(`pr-review-reusable.yml`), the same file in every repo, and needs the
+`OPENROUTER_API_KEY` repository secret. PR-Agent loads this file on its own
+(from the default branch, so rule changes apply once merged), and the review
+is judged against the "Code review" section below; nothing repo-specific
+lives in the workflow.
 
 A separate workflow, `.github/workflows/pages.yml`, runs on every push to
 `main` (and manually via workflow_dispatch): it builds the release web app
@@ -180,8 +183,8 @@ derived from the repo name so the workflow ports to other repos unchanged.
 
 ## Code review
 
-Applies to any agent reviewing a pull request (Codex via
-`codex-review.yml`, Claude Code via `/code-review`, or a human-driven
+Applies to any agent reviewing a pull request (PR-Agent via
+`pr-review.yml`, Claude Code via `/code-review`, or a human-driven
 session). Review only the diff against the base branch; do not re-review
 untouched code.
 
