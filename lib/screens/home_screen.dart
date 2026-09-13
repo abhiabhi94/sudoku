@@ -51,7 +51,7 @@ class HomeScreen extends ConsumerWidget {
                                 ?.copyWith(
                                     fontWeight: FontWeight.w900, color: context.palette.textInk),
                           ),
-                          // Devanagari glyphs hang below Nunito's line box, so
+                          // Devanagari fallback glyphs hang below the Latin line box, so
                           // keep a little air before the tagline.
                           const SizedBox(height: 4),
                           Text(
@@ -149,7 +149,14 @@ class _GamesCompletedPill extends StatelessWidget {
                 ?.copyWith(fontWeight: FontWeight.w900, color: context.palette.primaryIndigo),
           ),
           const SizedBox(width: 8),
-          Text(label, style: TextStyle(color: context.palette.textMuted, fontWeight: FontWeight.w600)),
+          // Expanded so a long localized label wraps instead of overflowing
+          // on narrow, large-text screens.
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(color: context.palette.textMuted, fontWeight: FontWeight.w600),
+            ),
+          ),
         ],
       ),
     );
