@@ -56,3 +56,46 @@ jobs:
       # and uploads the PNGs as the "screenshots" artifact for visual review.
       - name: Smoke test + screenshots
         uses: ./.github/actions/web-smoke
+
+  apk:
+    name: Android debug APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Read pinned Flutter version
+        id: flutter
+        run: echo "version=$(tr -d '[:space:]' < .flutter-version)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ steps.flutter.outputs.version }}
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate localizations
+        run: flutter gen-l10n
+
+      # Debug = "Sudoku Testing" (app.curious.sudoku.testing, every level
+      # unlocked), installable next to the Play build. arm64 only keeps the
+      # artifact small; every phone from the last decade is arm64.
+      - name: Build debug APK (arm64)
+        run: flutter build apk --debug --split-per-abi --target-platform android-arm64
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: sudoku-testing-debug-apk
+          path: build/app/outputs/flutter-apk/app-arm64-v8a-debug.apk
+          retention-days: 14
