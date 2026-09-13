@@ -65,4 +65,19 @@ void main() {
     expect(container.read(activeGameProvider), isNull);
     expect(find.text('Continue'), findsNothing);
   });
+
+  testWidgets('tier headers never overflow on a narrow, large-text screen',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(320, 1200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    tester.platformDispatcher.textScaleFactorTestValue = 1.5;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+    await pumpApp(tester, const HomeScreen(), locale: const Locale('hi'));
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('शुरुआती'), findsOneWidget);
+    expect(find.text('· जलवा दिखाएँ'), findsOneWidget);
+  });
 }
