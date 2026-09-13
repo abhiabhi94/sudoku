@@ -46,9 +46,12 @@ screenshots"). See `.claude/skills/run/SKILL.md` and `docs/cloud-dev.md`
 (porting checklist for other repos). The SessionStart hook in
 `.claude/hooks/session-start.sh` installs the SDK pinned in `.flutter-version`.
 
-The web target is a verification/preview target; the shipped platforms are
-still Android + iOS. Nunito is bundled in `assets/fonts/` (google_fonts
-resolves it from assets, no runtime fetch).
+The web target doubles as a public build: `.github/workflows/pages.yml`
+deploys the release web app to GitHub Pages (https://abhiabhi94.github.io/sudoku/)
+on every push to `main`. The shipped store platforms are still Android + iOS.
+Google Sans Flex (OFL) is bundled in `assets/fonts/` and declared under
+`fonts:` in pubspec.yaml (`kAppFontFamily` in `ui/theme.dart`); no runtime
+font fetch. Devanagari and emoji come from platform fallback fonts.
 
 ## Build types (no flavors)
 
@@ -95,7 +98,7 @@ lib/
   providers/           app_providers (DI root), settings_provider, progress_provider, game_provider
   services/            haptics_service, audio_service (both behind injectable backends)
   screens/             onboarding, home, game, settings, credits
-  ui/                  colors.dart (light+dark SudokuPalette), theme.dart (Material 3 + Nunito)
+  ui/                  colors.dart (light+dark SudokuPalette), theme.dart (Material 3 + Google Sans Flex)
   widgets/             sudoku_grid, number_pad, mistakes_indicator, hint_progress_bar, riddle_dialog
   l10n/                app_en.arb, app_hi.arb (+ generated app_localizations*.dart)
 ```
@@ -149,6 +152,12 @@ Chromium (`tool/screenshot.mjs`), fails on any Flutter exception, and uploads
 Job "Android debug APK" builds the arm64 "Sudoku Testing" APK and uploads it
 as the `sudoku-testing-debug-apk` artifact (14-day retention), so a testable
 build of any push or PR can be downloaded from the run's Actions page.
+
+A separate workflow, `.github/workflows/pages.yml`, runs on every push to
+`main` (and manually via workflow_dispatch): it builds the release web app
+with `--base-href /<repo>/` and deploys it to GitHub Pages. It needs the repo
+setting Settings → Pages → Source = "GitHub Actions" once; the base href is
+derived from the repo name so the workflow ports to other repos unchanged.
 
 ## Conventions
 
