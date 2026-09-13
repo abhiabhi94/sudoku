@@ -52,6 +52,7 @@ flutter build apk --release # -> app-release.apk  ("Sudoku")
 
 flutter build web --debug --no-web-resources-cdn   # web preview build (all levels open)
 node tool/screenshot.mjs --levels 1,11,21 --settings  # phone-size screenshots -> shots/
+node tool/screenshot.mjs --levels 1 --viewport 1440x900 --keys 5,ArrowRight  # desktop + keyboard
 ```
 
 The web build is a preview/verification target (used by CI and cloud dev

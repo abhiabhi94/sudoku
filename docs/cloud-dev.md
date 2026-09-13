@@ -10,7 +10,7 @@ Flutter game repo (e.g. the arrow game) to get the same workflow.
 |------------------------------------|--------|-------|
 | Flutter SDK (pinned)               | ✅     | Installed by the session-start hook into `/opt/flutter` |
 | `flutter analyze` / `flutter test` | ✅     | Same gates as CI, incl. `tool/coverage.sh` |
-| Web build + headless Chromium      | ✅     | `tool/screenshot.mjs` — phone-viewport screenshots + smoke test |
+| Web build + headless Chromium      | ✅     | `tool/screenshot.mjs` — phone *and* desktop (`--viewport`) screenshots, keyboard (`--keys`) + smoke test |
 | Android emulator                   | ❌     | No `/dev/kvm`; an emulator would not boot usably |
 | Android APK build                  | ⚠️     | Works after a one-off ~3 GB SDK install (see below); CI's `apk` job is the easy route |
 | iOS build                          | ❌     | Needs macOS/Xcode |
