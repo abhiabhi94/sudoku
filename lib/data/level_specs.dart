@@ -1,9 +1,9 @@
-/// The 30 level difficulty bands (3 tiers x 10 levels).
+/// The 40 level difficulty bands (4 tiers x 10 levels).
 ///
 /// Difficulty jumps clearly BETWEEN tiers (the technique-tier window steps up:
-/// Beginner 1-2, Advanced 3-4, Expert 4-6) and rises gently WITHIN a tier
-/// (clue count drifts down level by level). This is the single place to tune
-/// difficulty. Pure Dart, no Flutter.
+/// Beginner 1-2, Advanced 3-4, Expert 4-6, Master 7) and rises gently WITHIN a
+/// tier (clue count drifts down level by level). This is the single place to
+/// tune difficulty. Pure Dart, no Flutter.
 library;
 
 import '../models/level_spec.dart';
@@ -32,7 +32,7 @@ LevelSpec _spec(
   );
 }
 
-/// All 30 level specifications, indexed implicitly by (tier, level).
+/// All 40 level specifications, indexed implicitly by (tier, level).
 final List<LevelSpec> levelSpecs = List<LevelSpec>.unmodifiable(<LevelSpec>[
   // ---- Beginner (tier 1): naked & hidden singles only -------------------
   _spec(1, 1, 40, 1, 2),
@@ -69,8 +69,20 @@ final List<LevelSpec> levelSpecs = List<LevelSpec>.unmodifiable(<LevelSpec>[
   _spec(3, 8, 25, 5, 6, symmetric: false),
   _spec(3, 9, 24, 5, 6, symmetric: false),
   _spec(3, 10, 23, 5, 6, symmetric: false),
+
+  // ---- Master (tier 4): every board needs an XY-Wing ---------------------
+  _spec(4, 1, 27, 7, 7, symmetric: false),
+  _spec(4, 2, 27, 7, 7, symmetric: false),
+  _spec(4, 3, 26, 7, 7, symmetric: false),
+  _spec(4, 4, 26, 7, 7, symmetric: false),
+  _spec(4, 5, 25, 7, 7, symmetric: false),
+  _spec(4, 6, 25, 7, 7, symmetric: false),
+  _spec(4, 7, 24, 7, 7, symmetric: false),
+  _spec(4, 8, 24, 7, 7, symmetric: false),
+  _spec(4, 9, 23, 7, 7, symmetric: false),
+  _spec(4, 10, 22, 7, 7, symmetric: false),
 ]);
 
-/// The spec for a given [tier] (1..3) and [level] (1..10).
+/// The spec for a given [tier] (1..4) and [level] (1..10).
 LevelSpec specFor(int tier, int level) =>
     levelSpecs.firstWhere((s) => s.tier == tier && s.level == level);

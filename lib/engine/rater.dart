@@ -18,7 +18,7 @@ class DifficultyRating {
   /// Whether the puzzle is solvable by the technique ladder without guessing.
   final bool solvable;
 
-  /// Highest technique tier required (1..6), or 0 if already solved.
+  /// Highest technique tier required (1..7), or 0 if already solved.
   final int hardestTier;
 
   /// Number of given clues.

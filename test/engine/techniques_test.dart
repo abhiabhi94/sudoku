@@ -140,6 +140,48 @@ void main() {
     });
   });
 
+  group('xy-wing', () {
+    test('a pivot {x,y} with pincers {x,z} and {y,z} clears z from cells '
+        'seeing both pincers', () {
+      final s = _fullState();
+      // Pivot at (0,0) = {1,2}; pincers at (0,4) = {1,3} (same row) and
+      // (4,0) = {2,3} (same column). Cell (4,4) sees both pincers.
+      s.candidates[indexOf(0, 0)] = maskForDigit(1) | maskForDigit(2);
+      s.candidates[indexOf(0, 4)] = maskForDigit(1) | maskForDigit(3);
+      s.candidates[indexOf(4, 0)] = maskForDigit(2) | maskForDigit(3);
+      final step = detectXYWing(s)!;
+      expect(step.technique, Technique.xyWing);
+      expect(_hasElim(step, indexOf(4, 4), 3), isTrue);
+      // (0,8) sees only the row pincer, so it keeps its 3.
+      expect(_hasElim(step, indexOf(0, 8), 3), isFalse);
+      // Never from the wing cells themselves, and never a non-z digit.
+      expect(_hasElim(step, indexOf(0, 4), 3), isFalse);
+      expect(_hasElim(step, indexOf(4, 0), 3), isFalse);
+      expect(step.eliminations.every((e) => e.digit == 3), isTrue);
+    });
+
+    test('ignores bivalue peers that do not form a wing', () {
+      final s = _fullState();
+      // Two peers sharing the SAME pivot digit are not pincers.
+      s.candidates[indexOf(0, 0)] = maskForDigit(1) | maskForDigit(2);
+      s.candidates[indexOf(0, 4)] = maskForDigit(1) | maskForDigit(3);
+      s.candidates[indexOf(4, 0)] = maskForDigit(1) | maskForDigit(3);
+      expect(detectXYWing(s), isNull);
+    });
+
+    test('returns null when z is already absent around the pincers', () {
+      final s = _fullState();
+      s.candidates[indexOf(0, 0)] = maskForDigit(1) | maskForDigit(2);
+      s.candidates[indexOf(0, 4)] = maskForDigit(1) | maskForDigit(3);
+      s.candidates[indexOf(4, 0)] = maskForDigit(2) | maskForDigit(3);
+      final clear = ~maskForDigit(3);
+      for (var i = 0; i < cellCount; i++) {
+        if (i != indexOf(0, 4) && i != indexOf(4, 0)) s.candidates[i] &= clear;
+      }
+      expect(detectXYWing(s), isNull);
+    });
+  });
+
   group('solveLogically & firstHint', () {
     final puzzle = parseBoard(
       '53..7....6..195....98....6.8...6...34..8.3..17...2...6.6....28....419..5....8..79',

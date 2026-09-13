@@ -167,7 +167,7 @@ try {
   }
 
   for (const globalLevel of levels) {
-    const tierIndex = Math.floor((globalLevel - 1) / 10); // 0 Beginner, 1 Advanced, 2 Expert
+    const tierIndex = Math.floor((globalLevel - 1) / 10); // 0 Beginner, 1 Advanced, 2 Expert, 3 Master
     const level = ((globalLevel - 1) % 10) + 1;
     // The accessible name is "Level N" + the tile's digit, so anchor only the start.
     const name = lang === 'hi' ? new RegExp(`^लेवल ${level}(\\s|$)`) : new RegExp(`^Level ${level}(\\s|$)`);

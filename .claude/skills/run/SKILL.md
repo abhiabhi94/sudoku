@@ -20,7 +20,7 @@ node tool/screenshot.mjs --dump                                      # print rea
 ```
 
 `--levels` takes *global* level numbers: 1–10 Beginner, 11–20 Advanced,
-21–30 Expert. Then `Read` the PNGs in `shots/` to review them.
+21–30 Expert, 31–40 Master. Then `Read` the PNGs in `shots/` to review them.
 
 Rebuild whenever `lib/` changes; the script serves whatever is in `build/web`.
 `PATH`/`NODE_PATH` are set by the session-start hook; if `flutter` is missing

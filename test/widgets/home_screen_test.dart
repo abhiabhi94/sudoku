@@ -36,6 +36,7 @@ void main() {
     expect(find.text('Beginner'), findsOneWidget);
     expect(find.text('Advanced'), findsOneWidget);
     expect(find.text('Expert'), findsOneWidget);
+    expect(find.text('Master'), findsOneWidget);
     expect(find.text('Games completed'), findsOneWidget);
     expect(find.text('0'), findsOneWidget);
   });

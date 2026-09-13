@@ -22,11 +22,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Fill the grid so every row, column and box has 1 to 9. No maths, just logic.';
 
   @override
-  String get onboardTitle2 => 'Three tiers, thirty levels';
+  String get onboardTitle2 => 'Four tiers, forty levels';
 
   @override
   String get onboardBody2 =>
-      'Warm up in Beginner, flex in Advanced, and show off in Expert. Fresh boards every time.';
+      'Warm up in Beginner, flex in Advanced, show off in Expert, and go all in at Master. Fresh boards every time.';
 
   @override
   String get onboardTitle3 => 'Stuck? Earn a hint!';
@@ -74,6 +74,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tierExpert => 'Expert';
 
   @override
+  String get tierMaster => 'Master';
+
+  @override
   String get tierBeginnerTag => 'Warm up';
 
   @override
@@ -81,6 +84,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tierExpertTag => 'Show off';
+
+  @override
+  String get tierMasterTag => 'Go all in';
 
   @override
   String levelNumber(int number) {

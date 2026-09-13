@@ -17,9 +17,9 @@ void _assertPlayable(GeneratedPuzzle p) {
 
 void main() {
   group('level specs', () {
-    test('there are 30 specs, one per tier/level, with sane windows', () {
-      expect(levelSpecs.length, 30);
-      for (var tier = 1; tier <= 3; tier++) {
+    test('there are 40 specs, one per tier/level, with sane windows', () {
+      expect(levelSpecs.length, 40);
+      for (var tier = 1; tier <= 4; tier++) {
         for (var level = 1; level <= 10; level++) {
           final spec = specFor(tier, level);
           expect(spec.minClues, lessThanOrEqualTo(spec.targetClues));
@@ -32,6 +32,7 @@ void main() {
     test('technique tiers step up between difficulty tiers', () {
       expect(specFor(1, 10).maxTier, lessThan(specFor(2, 1).maxTier));
       expect(specFor(2, 10).maxTier, lessThan(specFor(3, 10).maxTier));
+      expect(specFor(3, 10).maxTier, lessThan(specFor(4, 1).minTier));
     });
   });
 
@@ -44,6 +45,8 @@ void main() {
         [2, 10],
         [3, 1],
         [3, 6],
+        [4, 1],
+        [4, 10],
       ]) {
         final p = generateForBand(coord[0], coord[1], 20260728);
         _assertPlayable(p);
@@ -69,6 +72,15 @@ void main() {
       if (p.inBand) {
         expect(p.hardestTier, inInclusiveRange(spec.minTier, spec.maxTier));
       }
+    });
+
+    test('master puzzles need an XY-Wing', () {
+      final spec = specFor(4, 5);
+      final p = generateForBand(4, 5, 2026);
+      _assertPlayable(p);
+      expect(p.inBand, isTrue);
+      expect(p.hardestTier, inInclusiveRange(spec.minTier, spec.maxTier));
+      expect(p.clueCount, inInclusiveRange(spec.minClues, spec.maxClues));
     });
 
     test('is deterministic for a given seed', () {

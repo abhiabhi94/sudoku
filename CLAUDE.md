@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 A modern, playful cross-platform (Android + iOS) **Sudoku** game built with Flutter.
-Classic 9×9 Sudoku, 3 tiers (Beginner / Advanced / Expert) × 10 levels, with a
+Classic 9×9 Sudoku, 4 tiers (Beginner / Advanced / Expert / Master) × 10 levels, with a
 fresh procedurally-generated puzzle each time a level is opened. Forgiving
 mistakes (3 free, then a short lockout), riddle-gated hints, local progress
 tracking, configurable music + haptics, and English/Hindi localization.
@@ -87,10 +87,10 @@ lib/
     board.dart           geometry, candidate bitmasks, validity
     generator.dart       randomized-MRV full solution + uniqueness-preserving digging
     solver.dart          countSolutions(cap:2) uniqueness + solver
-    techniques.dart      technique ladder (singles→locked→pairs/triples→X-Wing); powers rating AND hints
+    techniques.dart      technique ladder (singles→locked→pairs/triples→X-Wing→XY-Wing); powers rating AND hints
     rater.dart           score puzzle by hardest technique + clue count
     puzzle_factory.dart  generateForBand(tier,level,seed) — generatePuzzleTask is the isolate entry
-  data/                level_specs.dart (30 bands), riddle_bank.dart (10 EN + 10 HI), audio_credits.dart
+  data/                level_specs.dart (40 bands), riddle_bank.dart (10 EN + 10 HI), audio_credits.dart
   models/              level_spec, level_progress, settings, game_state, riddle
   providers/           app_providers (DI root), settings_provider, progress_provider, game_provider
   services/            haptics_service, audio_service (both behind injectable backends)
@@ -107,7 +107,8 @@ Key patterns:
 - **Generation is off-thread:** `game_provider` calls `compute(generatePuzzleTask, …)`.
   The engine has zero Flutter imports so it is isolate-safe and fully unit-testable.
 - **Difficulty:** technique-tier window + clue count per level, tuned in
-  `data/level_specs.dart` (tiers jump between Beginner/Advanced/Expert, gentle within).
+  `data/level_specs.dart` (tiers jump between Beginner/Advanced/Expert/Master, gentle within;
+  Master requires an XY-Wing on every board).
 - **Mistakes:** 3 free; the 4th triggers a 3–5s lockout (paused timer). Hints
   reveal the next logically-deducible cell, gated behind a word riddle.
 

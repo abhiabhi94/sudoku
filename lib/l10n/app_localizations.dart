@@ -125,13 +125,13 @@ abstract class AppLocalizations {
   /// No description provided for @onboardTitle2.
   ///
   /// In en, this message translates to:
-  /// **'Three tiers, thirty levels'**
+  /// **'Four tiers, forty levels'**
   String get onboardTitle2;
 
   /// No description provided for @onboardBody2.
   ///
   /// In en, this message translates to:
-  /// **'Warm up in Beginner, flex in Advanced, and show off in Expert. Fresh boards every time.'**
+  /// **'Warm up in Beginner, flex in Advanced, show off in Expert, and go all in at Master. Fresh boards every time.'**
   String get onboardBody2;
 
   /// No description provided for @onboardTitle3.
@@ -218,6 +218,12 @@ abstract class AppLocalizations {
   /// **'Expert'**
   String get tierExpert;
 
+  /// No description provided for @tierMaster.
+  ///
+  /// In en, this message translates to:
+  /// **'Master'**
+  String get tierMaster;
+
   /// No description provided for @tierBeginnerTag.
   ///
   /// In en, this message translates to:
@@ -235,6 +241,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Show off'**
   String get tierExpertTag;
+
+  /// No description provided for @tierMasterTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Go all in'**
+  String get tierMasterTag;
 
   /// No description provided for @levelNumber.
   ///
