@@ -22,11 +22,11 @@ class AppLocalizationsHi extends AppLocalizations {
       'ग्रिड इस तरह भरें कि हर पंक्ति, स्तंभ और बॉक्स में 1 से 9 तक हों। गणित नहीं, बस तर्क।';
 
   @override
-  String get onboardTitle2 => 'तीन स्तर, तीस लेवल';
+  String get onboardTitle2 => 'चार स्तर, चालीस लेवल';
 
   @override
   String get onboardBody2 =>
-      'शुरुआती में वार्म-अप, एडवांस्ड में कमाल और एक्सपर्ट में जलवा। हर बार नई पहेली।';
+      'शुरुआती में वार्म-अप, एडवांस्ड में कमाल, एक्सपर्ट में जलवा और मास्टर में पूरा दम। हर बार नई पहेली।';
 
   @override
   String get onboardTitle3 => 'अटक गए? संकेत कमाएँ!';
@@ -74,6 +74,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get tierExpert => 'एक्सपर्ट';
 
   @override
+  String get tierMaster => 'मास्टर';
+
+  @override
   String get tierBeginnerTag => 'वार्म-अप';
 
   @override
@@ -81,6 +84,9 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get tierExpertTag => 'जलवा दिखाएँ';
+
+  @override
+  String get tierMasterTag => 'पूरा दम लगाएँ';
 
   @override
   String levelNumber(int number) {

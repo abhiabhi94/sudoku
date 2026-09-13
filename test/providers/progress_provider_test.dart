@@ -98,10 +98,12 @@ void main() {
       expect(locked.isUnlocked(1), isTrue);
       expect(locked.isUnlocked(2), isFalse);
       expect(locked.isUnlocked(30), isFalse);
+      expect(locked.isUnlocked(31), isTrue); // first Master level is open
+      expect(locked.isUnlocked(40), isFalse);
 
       final openAll = ProgressNotifier(repo, unlockAllLevels: true);
       addTearDown(openAll.dispose);
-      expect(openAll.isUnlocked(30), isTrue);
+      expect(openAll.isUnlocked(40), isTrue);
     });
   });
 }

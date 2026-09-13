@@ -14,11 +14,12 @@ enum Technique {
   hiddenPair(4),
   nakedTriple(5),
   hiddenTriple(5),
-  xWing(6);
+  xWing(6),
+  xyWing(7);
 
   const Technique(this.tier);
 
-  /// Difficulty tier, 1 (naked single) .. 6 (X-Wing).
+  /// Difficulty tier, 1 (naked single) .. 7 (XY-Wing).
   final int tier;
 }
 
@@ -137,6 +138,7 @@ const List<Technique> _ladder = <Technique>[
   Technique.nakedTriple,
   Technique.hiddenTriple,
   Technique.xWing,
+  Technique.xyWing,
 ];
 
 /// Returns the easiest technique step that makes progress, or null if stuck.
@@ -166,6 +168,8 @@ SolveStep? _detect(Technique technique, SolveState s) {
       return detectHiddenSubset(s, 3);
     case Technique.xWing:
       return detectXWing(s);
+    case Technique.xyWing:
+      return detectXYWing(s);
   }
 }
 
@@ -468,6 +472,49 @@ SolveStep? _xWingForLines(
       }
       if (elims.isNotEmpty) {
         return SolveStep(Technique.xWing, eliminations: elims);
+      }
+    }
+  }
+  return null;
+}
+
+/// XY-Wing: a pivot cell with candidates {x, y} and two pincer cells it sees
+/// with candidates {x, z} and {y, z}. Whichever way the pivot resolves, one
+/// pincer becomes z, so z can be removed from every cell that sees both
+/// pincers.
+SolveStep? detectXYWing(SolveState s) {
+  bool bivalue(int i) => s.cells[i] == 0 && bitCount(s.candidates[i]) == 2;
+
+  for (var pivot = 0; pivot < cellCount; pivot++) {
+    if (!bivalue(pivot)) continue;
+    final pivotMask = s.candidates[pivot];
+
+    // Bivalue peers sharing exactly one candidate with the pivot.
+    final wings = <int>[
+      for (final p in peers[pivot])
+        if (bivalue(p) && isSingleBit(s.candidates[p] & pivotMask)) p,
+    ];
+
+    for (var a = 0; a < wings.length; a++) {
+      for (var b = a + 1; b < wings.length; b++) {
+        final maskA = s.candidates[wings[a]];
+        final maskB = s.candidates[wings[b]];
+        final shared = maskA & maskB;
+        // The pincers must share exactly the digit the pivot lacks, and
+        // between them cover both pivot digits.
+        if (!isSingleBit(shared) || (shared & pivotMask) != 0) continue;
+        if ((maskA | maskB) != (pivotMask | shared)) continue;
+
+        final z = digitOfSingleMask(shared);
+        final elims = <Elimination>[];
+        for (final i in peers[wings[a]]) {
+          if (i == wings[b] || i == pivot || s.cells[i] != 0) continue;
+          if ((s.candidates[i] & shared) == 0) continue;
+          if (peers[wings[b]].contains(i)) elims.add(Elimination(i, z));
+        }
+        if (elims.isNotEmpty) {
+          return SolveStep(Technique.xyWing, eliminations: elims);
+        }
       }
     }
   }

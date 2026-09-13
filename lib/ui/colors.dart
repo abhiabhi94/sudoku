@@ -67,6 +67,7 @@ const List<Color> _lTierColors = <Color>[
   _lAccentMint,
   _lPrimaryIndigo,
   _lAccentCoral,
+  _lAccentSun,
 ];
 
 // ---------------------------------------------------------------------------
@@ -126,6 +127,7 @@ const List<Color> _dTierColors = <Color>[
   _dAccentMint,
   _dPrimaryIndigo,
   _dAccentCoral,
+  _dAccentSun,
 ];
 
 // ---------------------------------------------------------------------------

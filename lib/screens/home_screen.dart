@@ -12,7 +12,7 @@ import '../utils/format.dart';
 import 'game_screen.dart';
 import 'settings_screen.dart';
 
-/// The home screen: three tiers, ten levels each, with unlock + best-time state.
+/// The home screen: four tiers, ten levels each, with unlock + best-time state.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -28,6 +28,7 @@ class HomeScreen extends ConsumerWidget {
       _TierInfo(1, context.palette.tierColors[0], l10n.tierBeginner, l10n.tierBeginnerTag),
       _TierInfo(2, context.palette.tierColors[1], l10n.tierAdvanced, l10n.tierAdvancedTag),
       _TierInfo(3, context.palette.tierColors[2], l10n.tierExpert, l10n.tierExpertTag),
+      _TierInfo(4, context.palette.tierColors[3], l10n.tierMaster, l10n.tierMasterTag),
     ];
 
     return Scaffold(
@@ -50,6 +51,9 @@ class HomeScreen extends ConsumerWidget {
                                 ?.copyWith(
                                     fontWeight: FontWeight.w900, color: context.palette.textInk),
                           ),
+                          // Devanagari glyphs hang below Nunito's line box, so
+                          // keep a little air before the tagline.
+                          const SizedBox(height: 4),
                           Text(
                             l10n.appTagline,
                             style: Theme.of(context).textTheme.bodyMedium

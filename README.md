@@ -5,7 +5,7 @@ A modern, playful cross-platform (Android + iOS) Sudoku game built with Flutter.
 ## Features
 
 - **Classic 9×9 Sudoku** with a guaranteed-unique solution.
-- **3 tiers × 10 levels** (Beginner, Advanced, Expert). Difficulty jumps
+- **4 tiers × 10 levels** (Beginner, Advanced, Expert, Master). Difficulty jumps
   between tiers and rises gently within a tier. A **fresh puzzle is generated
   every time** you open a level.
 - **Forgiving mistakes**: 3 wrong placements are free; a 4th triggers a playful

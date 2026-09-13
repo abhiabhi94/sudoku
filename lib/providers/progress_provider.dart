@@ -9,8 +9,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/level_progress.dart';
 import 'app_providers.dart';
 
-/// Total number of levels (3 tiers x 10).
-const int totalLevels = 30;
+/// Total number of levels (4 tiers x 10).
+const int totalLevels = 40;
 
 /// Levels per tier.
 const int levelsPerTier = 10;
@@ -81,8 +81,8 @@ class ProgressNotifier extends StateNotifier<Map<int, LevelProgress>> {
   bool isUnlocked(int level) => _unlockAll || unlockedByProgress(level);
 
   /// The pure unlock rule (ignores debug-mode overrides):
-  /// - The first level of every tier (1, 11, 21) is always open, so a player
-  ///   can jump straight into Advanced or Expert.
+  /// - The first level of every tier (1, 11, 21, 31) is always open, so a
+  ///   player can jump straight into Advanced, Expert or Master.
   /// - Every other level needs the previous one cleared.
   bool unlockedByProgress(int level) {
     if (level <= 1) return true;
@@ -90,11 +90,11 @@ class ProgressNotifier extends StateNotifier<Map<int, LevelProgress>> {
     return progressFor(level - 1).completed;
   }
 
-  /// Whether [level] is the first level of a tier beyond the first (11 or 21).
+  /// Whether [level] is the first level of a tier beyond the first (11, 21, 31).
   bool _isFirstOfTier(int level) =>
       level > 1 && (level - 1) % levelsPerTier == 0;
 
-  /// How many levels of tier [tierIndex] (0..2) are cleared.
+  /// How many levels of tier [tierIndex] (0..3) are cleared.
   int completedInTier(int tierIndex) {
     final start = tierIndex * levelsPerTier + 1;
     var count = 0;
@@ -107,8 +107,8 @@ class ProgressNotifier extends StateNotifier<Map<int, LevelProgress>> {
   /// The furthest level reached by linear progress — the highest level whose
   /// previous level has been cleared (for a "Continue" affordance). This
   /// deliberately ignores the always-open first level of each tier, so it
-  /// stays a meaningful resume target rather than jumping ahead to Advanced or
-  /// Expert on a fresh install.
+  /// stays a meaningful resume target rather than jumping ahead to a later
+  /// tier on a fresh install.
   int get highestUnlocked {
     var highest = 1;
     for (var level = 2; level <= totalLevels; level++) {

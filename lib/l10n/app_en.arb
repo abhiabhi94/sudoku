@@ -7,8 +7,8 @@
 
   "onboardTitle1": "Welcome, puzzle friend!",
   "onboardBody1": "Fill the grid so every row, column and box has 1 to 9. No maths, just logic.",
-  "onboardTitle2": "Three tiers, thirty levels",
-  "onboardBody2": "Warm up in Beginner, flex in Advanced, and show off in Expert. Fresh boards every time.",
+  "onboardTitle2": "Four tiers, forty levels",
+  "onboardBody2": "Warm up in Beginner, flex in Advanced, show off in Expert, and go all in at Master. Fresh boards every time.",
   "onboardTitle3": "Stuck? Earn a hint!",
   "onboardBody3": "Crack a fun riddle to unlock a hint. Three slips are fine — keep guessing and we'll make you pause.",
   "onboardSkip": "Skip",
@@ -26,9 +26,11 @@
   "tierBeginner": "Beginner",
   "tierAdvanced": "Advanced",
   "tierExpert": "Expert",
+  "tierMaster": "Master",
   "tierBeginnerTag": "Warm up",
   "tierAdvancedTag": "Flex a little",
   "tierExpertTag": "Show off",
+  "tierMasterTag": "Go all in",
 
   "levelNumber": "Level {number}",
   "@levelNumber": { "placeholders": { "number": { "type": "int" } } },

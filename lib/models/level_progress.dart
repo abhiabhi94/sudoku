@@ -9,7 +9,7 @@ class LevelProgress {
     required this.timesCompleted,
   });
 
-  /// Global level number, 1..30.
+  /// Global level number, 1..40.
   final int globalLevel;
 
   /// Whether the level has ever been solved.

@@ -21,7 +21,7 @@ void main() {
 
     await tester.tap(find.text('Next'));
     await settle(tester);
-    expect(find.text('Three tiers, thirty levels'), findsOneWidget);
+    expect(find.text('Four tiers, forty levels'), findsOneWidget);
 
     await tester.tap(find.text('Next'));
     await settle(tester);

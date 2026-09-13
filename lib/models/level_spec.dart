@@ -3,11 +3,11 @@
 ///
 /// Technique tiers (see [Technique] in engine/techniques.dart):
 ///   1 naked single · 2 hidden single · 3 locked candidates ·
-///   4 pairs · 5 triples · 6 X-Wing
+///   4 pairs · 5 triples · 6 X-Wing · 7 XY-Wing
 library;
 
-/// The three difficulty tiers.
-enum Difficulty { beginner, advanced, expert }
+/// The four difficulty tiers.
+enum Difficulty { beginner, advanced, expert, master }
 
 extension DifficultyLabel on Difficulty {
   /// 1-based tier number (Beginner = 1).
@@ -26,7 +26,7 @@ class LevelSpec {
     this.symmetric = true,
   });
 
-  /// 1 = Beginner, 2 = Advanced, 3 = Expert.
+  /// 1 = Beginner, 2 = Advanced, 3 = Expert, 4 = Master.
   final int tier;
 
   /// 1..10 within the tier.
@@ -46,7 +46,7 @@ class LevelSpec {
   /// Whether to dig clues in rotationally-symmetric pairs.
   final bool symmetric;
 
-  /// Global level number, 1..30.
+  /// Global level number, 1..40.
   int get globalLevel => (tier - 1) * 10 + level;
 
   /// The difficulty enum for this tier.
