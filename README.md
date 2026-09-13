@@ -2,6 +2,9 @@
 
 A modern, playful cross-platform (Android + iOS) Sudoku game built with Flutter.
 
+**Play in the browser:** https://abhiabhi94.github.io/sudoku/ (release build,
+deployed from `main` by GitHub Actions; installable as a PWA).
+
 ## Features
 
 - **Classic 9×9 Sudoku** with a guaranteed-unique solution.

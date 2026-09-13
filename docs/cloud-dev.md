@@ -49,7 +49,8 @@ flutter build apk --debug --split-per-abi --target-platform android-arm64   # ~6
 | `.claude/skills/run/SKILL.md` | Tells Claude how to build/screenshot/review in a session. |
 | `tool/screenshot.mjs` | The driver: static server + font mirror + Playwright script + smoke gate. |
 | `.github/actions/web-smoke/action.yml` | Composite action: build web, run the driver, upload `shots/`. Used by the `smoke` job in `ci.yml`. |
-| `assets/fonts/` + `pubspec.yaml` assets entry | Nunito bundled so `google_fonts` never fetches at runtime (offline-safe on phones too). |
+| `assets/fonts/` + `pubspec.yaml` `fonts:` block | Google Sans Flex bundled as a regular Flutter font family, so nothing is fetched at runtime (offline-safe on phones too). |
+| `.github/workflows/pages.yml` | Deploys the release web build to GitHub Pages on every push to `main` (base href derived from the repo name). |
 | `web/` | Web platform scaffold (`flutter create --platforms=web .`). |
 
 ## Porting to another Flutter game repo — checklist
@@ -59,12 +60,13 @@ flutter build apk --debug --split-per-abi --target-platform android-arm64   # ~6
 2. Copy `.flutter-version`, `.claude/`, `tool/screenshot.mjs`,
    `.github/actions/web-smoke/`, the `smoke` job from `ci.yml`, and the
    `/shots/` line in `.gitignore`.
-3. If the app uses `google_fonts`, bundle the family: download the exact
-   files the package expects (hashes live in
-   `google_fonts/lib/src/google_fonts_parts/part_<x>.g.dart`, URL
-   `https://fonts.gstatic.com/s/a/<hash>.ttf`), name them
-   `<Family>-<Weight>.ttf` (`Regular`, `Bold`, `SemiBold`, …), add the folder
-   under `flutter: assets:` and ship the OFL licence next to them.
+3. Bundle the typeface instead of fetching it at runtime (this repo uses
+   Google Sans Flex, OFL). Static per-weight TTFs come from the Google Fonts
+   CSS API: `curl -A "" "https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@700"`
+   prints the `.ttf` URL for that weight. Put them in `assets/fonts/`, declare
+   the family under `flutter: fonts:` in `pubspec.yaml` with one entry per
+   weight, ship `OFL.txt` next to them, and set `fontFamily` on the
+   `ThemeData` (see `lib/ui/theme.dart`). No `google_fonts` package needed.
 4. Adapt the **app-specific** parts of `tool/screenshot.mjs`:
    - the `prefs` map (your `shared_preferences` keys, `flutter.`-prefixed,
      JSON-encoded) — skip onboarding, mute audio, pick language/theme;
