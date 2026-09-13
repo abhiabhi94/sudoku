@@ -45,14 +45,14 @@ flutter build apk --debug --split-per-abi --target-platform android-arm64   # ~6
 | File | Role |
 |------|------|
 | `.flutter-version` | Single pin for the SDK (hook + both CI jobs read it). Keep in sync with `.metadata`. |
-| `AGENTS.md` + `CLAUDE.md` | One set of repo guidelines for every agent. `AGENTS.md` is the content (Codex reads it natively, incl. a "Code review" section); `CLAUDE.md` is a 10-line shim that starts with `@AGENTS.md` so Claude Code imports the same file. |
+| `AGENTS.md` + `CLAUDE.md` | One set of repo guidelines for every agent. `AGENTS.md` is the content (PR-Agent and Codex read it natively, incl. a "Code review" section); `CLAUDE.md` is a 10-line shim that starts with `@AGENTS.md` so Claude Code imports the same file. |
 | `.claude/hooks/session-start.sh` + `.claude/settings.json` | Cloud-only SessionStart hook: installs Flutter, `pub get`, `gen-l10n`, ensures Playwright/Chromium, exports `PATH`/`NODE_PATH`. |
 | `.claude/skills/run/SKILL.md` | Tells Claude how to build/screenshot/review in a session. |
 | `tool/screenshot.mjs` | The driver: static server + font mirror + Playwright script + smoke gate. |
 | `.github/actions/web-smoke/action.yml` | Composite action: build web, run the driver, upload `shots/`. Used by the `smoke` job in `ci.yml`. |
 | `assets/fonts/` + `pubspec.yaml` `fonts:` block | Google Sans Flex bundled as a regular Flutter font family, so nothing is fetched at runtime (offline-safe on phones too). |
 | `.github/workflows/pages.yml` | Deploys the release web build to GitHub Pages on every push to `main` (base href derived from the repo name). |
-| `.github/workflows/codex-review.yml` | 15-line caller of the account-wide reusable Codex review in `abhiabhi94/.github` (open / ready-for-review / `codex-review` label). Identical in every repo; the reusable workflow's README lists its inputs. |
+| `.github/workflows/pr-review.yml` | Short caller of the account-wide reusable PR-Agent review in `abhiabhi94/.github` (open / reopen / ready-for-review, plus `/review`-style PR comments). Identical in every repo; the reusable workflow's README lists its inputs. |
 | `web/` | Web platform scaffold (`flutter create --platforms=web .`). |
 
 ## Porting to another Flutter game repo — checklist
@@ -76,12 +76,12 @@ flutter build apk --debug --split-per-abi --target-platform android-arm64   # ~6
      Give tappable widgets a `Semantics(label: …, button: true)` or a
      `tooltip:` so the driver can find them; run `--dump` to list them.
 5. Adjust the default `runs:` lines in the composite action to your levels.
-6. Codex review: copy `.github/workflows/codex-review.yml` unchanged and
-   add the `OPENAI_API_KEY` secret to that repo (personal accounts have no
+6. AI review: copy `.github/workflows/pr-review.yml` unchanged and add
+   the `OPENROUTER_API_KEY` secret to that repo (personal accounts have no
    shared secrets). Keep the guidelines in `AGENTS.md` (with a "Code
    review" section) and make `CLAUDE.md` a shim whose first line is
    `@AGENTS.md`; the workflow has nothing repo-specific in it. The reusable
-   workflow itself lives in `abhiabhi94/.github`.
+   workflow itself (PR-Agent + OpenRouter) lives in `abhiabhi94/.github`.
 
 ## Gotchas worth remembering
 
