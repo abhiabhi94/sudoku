@@ -138,6 +138,21 @@ class GameNotifier extends StateNotifier<GameState> {
     haptics?.tap();
   }
 
+  /// Moves the selection by [rowDelta]/[colDelta], clamped to the board — the
+  /// arrow keys on the web build. With nothing selected yet, the first press
+  /// lands on the top-left cell.
+  void moveSelection(int rowDelta, int colDelta) {
+    if (state.phase != GamePhase.playing) return;
+    final current = state.selectedIndex;
+    if (current < 0) {
+      selectCell(0);
+      return;
+    }
+    final row = (rowOf(current) + rowDelta).clamp(0, boardSize - 1);
+    final col = (colOf(current) + colDelta).clamp(0, boardSize - 1);
+    selectCell(indexOf(row, col));
+  }
+
   /// Dismisses the "Why here?" hint explanation card.
   void dismissHint() {
     if (state.lastHint != null) state = state.copyWith(clearHint: true);

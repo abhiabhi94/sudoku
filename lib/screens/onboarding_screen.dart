@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/settings_provider.dart';
 import '../ui/colors.dart';
+import '../ui/layout.dart';
 import 'home_screen.dart';
 
 /// A one-time, cheerful onboarding shown only on first launch.
@@ -56,39 +57,41 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            Align(
-              alignment: Alignment.centerRight,
-              child: AnimatedOpacity(
-                opacity: onLast ? 0 : 1,
-                duration: const Duration(milliseconds: 200),
-                child: TextButton(
-                  onPressed: onLast ? null : _finish,
-                  child: Text(l10n.onboardSkip),
+        child: ContentColumn(
+          child: Column(
+            children: [
+              Align(
+                alignment: Alignment.centerRight,
+                child: AnimatedOpacity(
+                  opacity: onLast ? 0 : 1,
+                  duration: const Duration(milliseconds: 200),
+                  child: TextButton(
+                    onPressed: onLast ? null : _finish,
+                    child: Text(l10n.onboardSkip),
+                  ),
                 ),
               ),
-            ),
-            Expanded(
-              child: PageView.builder(
-                controller: _controller,
-                itemCount: slides.length,
-                onPageChanged: (i) => setState(() => _page = i),
-                itemBuilder: (context, i) => _SlideView(slide: slides[i]),
-              ),
-            ),
-            _Dots(count: slides.length, active: _page),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: () => _next(lastIndex),
-                  child: Text(onLast ? l10n.onboardStart : l10n.onboardNext),
+              Expanded(
+                child: PageView.builder(
+                  controller: _controller,
+                  itemCount: slides.length,
+                  onPageChanged: (i) => setState(() => _page = i),
+                  itemBuilder: (context, i) => _SlideView(slide: slides[i]),
                 ),
               ),
-            ),
-          ],
+              _Dots(count: slides.length, active: _page),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: () => _next(lastIndex),
+                    child: Text(onLast ? l10n.onboardStart : l10n.onboardNext),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

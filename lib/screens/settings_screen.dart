@@ -5,6 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../models/settings.dart';
 import '../providers/settings_provider.dart';
 import '../ui/colors.dart';
+import '../ui/layout.dart';
 import 'credits_screen.dart';
 
 /// Settings: music (on/off + volume), vibration, language, and music credits.
@@ -19,127 +20,132 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settingsTitle)),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          _SettingCard(
-            child: Column(
-              children: [
-                SwitchListTile(
-                  value: settings.musicOn,
-                  onChanged: notifier.setMusic,
-                  secondary: const Text('🎵', style: TextStyle(fontSize: 24)),
-                  title: Text(l10n.settingsMusic),
-                  subtitle: Text(l10n.settingsMusicSubtitle),
-                ),
-                if (settings.musicOn)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      children: [
-                        Icon(Icons.volume_up_rounded,
-                            color: context.palette.textMuted),
-                        Expanded(
-                          child: Slider(
-                            value: settings.musicVolume,
-                            onChanged: notifier.setMusicVolume,
+      // Full-width list, phone-width content: on a desktop browser the cards
+      // would otherwise stretch across the whole window.
+      body: LayoutBuilder(
+        builder: (context, constraints) => ListView(
+          padding: const EdgeInsets.all(20) +
+              contentGutter(constraints.maxWidth),
+          children: [
+            _SettingCard(
+              child: Column(
+                children: [
+                  SwitchListTile(
+                    value: settings.musicOn,
+                    onChanged: notifier.setMusic,
+                    secondary: const Text('🎵', style: TextStyle(fontSize: 24)),
+                    title: Text(l10n.settingsMusic),
+                    subtitle: Text(l10n.settingsMusicSubtitle),
+                  ),
+                  if (settings.musicOn)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: [
+                          Icon(Icons.volume_up_rounded,
+                              color: context.palette.textMuted),
+                          Expanded(
+                            child: Slider(
+                              value: settings.musicVolume,
+                              onChanged: notifier.setMusicVolume,
+                            ),
                           ),
-                        ),
-                        Text('${(settings.musicVolume * 100).round()}%',
-                            style: TextStyle(color: context.palette.textMuted)),
+                          Text('${(settings.musicVolume * 100).round()}%',
+                              style: TextStyle(color: context.palette.textMuted)),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            _SettingCard(
+              child: SwitchListTile(
+                value: settings.hapticsOn,
+                onChanged: notifier.setHaptics,
+                secondary: const Text('📳', style: TextStyle(fontSize: 24)),
+                title: Text(l10n.settingsVibration),
+                subtitle: Text(l10n.settingsVibrationSubtitle),
+              ),
+            ),
+            const SizedBox(height: 16),
+            _SettingCard(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Text('🌐', style: TextStyle(fontSize: 24)),
+                        const SizedBox(width: 12),
+                        Text(l10n.settingsLanguage,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w700, fontSize: 16)),
                       ],
                     ),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          _SettingCard(
-            child: SwitchListTile(
-              value: settings.hapticsOn,
-              onChanged: notifier.setHaptics,
-              secondary: const Text('📳', style: TextStyle(fontSize: 24)),
-              title: Text(l10n.settingsVibration),
-              subtitle: Text(l10n.settingsVibrationSubtitle),
-            ),
-          ),
-          const SizedBox(height: 16),
-          _SettingCard(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Text('🌐', style: TextStyle(fontSize: 24)),
-                      const SizedBox(width: 12),
-                      Text(l10n.settingsLanguage,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w700, fontSize: 16)),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  SegmentedButton<String>(
-                    segments: <ButtonSegment<String>>[
-                      ButtonSegment(value: 'en', label: Text(l10n.languageEnglish)),
-                      ButtonSegment(value: 'hi', label: Text(l10n.languageHindi)),
-                    ],
-                    selected: {settings.languageCode},
-                    onSelectionChanged: (sel) => notifier.setLanguage(sel.first),
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    SegmentedButton<String>(
+                      segments: <ButtonSegment<String>>[
+                        ButtonSegment(value: 'en', label: Text(l10n.languageEnglish)),
+                        ButtonSegment(value: 'hi', label: Text(l10n.languageHindi)),
+                      ],
+                      selected: {settings.languageCode},
+                      onSelectionChanged: (sel) => notifier.setLanguage(sel.first),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          _SettingCard(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Text('🌗', style: TextStyle(fontSize: 24)),
-                      const SizedBox(width: 12),
-                      Text(l10n.settingsTheme,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w700, fontSize: 16)),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  SegmentedButton<ThemeChoice>(
-                    segments: <ButtonSegment<ThemeChoice>>[
-                      ButtonSegment(
-                          value: ThemeChoice.system,
-                          label: Text(l10n.themeSystem)),
-                      ButtonSegment(
-                          value: ThemeChoice.light,
-                          label: Text(l10n.themeLight)),
-                      ButtonSegment(
-                          value: ThemeChoice.dark, label: Text(l10n.themeDark)),
-                    ],
-                    selected: {settings.themeChoice},
-                    onSelectionChanged: (sel) =>
-                        notifier.setThemeChoice(sel.first),
-                  ),
-                ],
+            const SizedBox(height: 16),
+            _SettingCard(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Text('🌗', style: TextStyle(fontSize: 24)),
+                        const SizedBox(width: 12),
+                        Text(l10n.settingsTheme,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w700, fontSize: 16)),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    SegmentedButton<ThemeChoice>(
+                      segments: <ButtonSegment<ThemeChoice>>[
+                        ButtonSegment(
+                            value: ThemeChoice.system,
+                            label: Text(l10n.themeSystem)),
+                        ButtonSegment(
+                            value: ThemeChoice.light,
+                            label: Text(l10n.themeLight)),
+                        ButtonSegment(
+                            value: ThemeChoice.dark, label: Text(l10n.themeDark)),
+                      ],
+                      selected: {settings.themeChoice},
+                      onSelectionChanged: (sel) =>
+                          notifier.setThemeChoice(sel.first),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          _SettingCard(
-            child: ListTile(
-              leading: const Text('🎼', style: TextStyle(fontSize: 24)),
-              title: Text(l10n.settingsCredits),
-              trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const CreditsScreen()),
+            const SizedBox(height: 16),
+            _SettingCard(
+              child: ListTile(
+                leading: const Text('🎼', style: TextStyle(fontSize: 24)),
+                title: Text(l10n.settingsCredits),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(builder: (_) => const CreditsScreen()),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

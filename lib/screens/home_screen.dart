@@ -8,6 +8,7 @@ import '../models/saved_game.dart';
 import '../providers/active_game_provider.dart';
 import '../providers/progress_provider.dart';
 import '../ui/colors.dart';
+import '../ui/layout.dart';
 import '../utils/format.dart';
 import 'game_screen.dart';
 import 'settings_screen.dart';
@@ -31,85 +32,101 @@ class HomeScreen extends ConsumerWidget {
       _TierInfo(4, context.palette.tierColors[3], l10n.tierMaster, l10n.tierMasterTag),
     ];
 
-    return Scaffold(
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 16, 16, 8),
-                child: Row(
+    final slivers = <Widget>[
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 16, 16, 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.appTitle,
-                            style: Theme.of(context).textTheme.displaySmall
-                                ?.copyWith(
-                                    fontWeight: FontWeight.w900, color: context.palette.textInk),
-                          ),
-                          // Devanagari fallback glyphs hang below the Latin line box, so
-                          // keep a little air before the tagline.
-                          const SizedBox(height: 4),
-                          Text(
-                            l10n.appTagline,
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(color: context.palette.textMuted),
-                          ),
-                        ],
-                      ),
+                    Text(
+                      l10n.appTitle,
+                      style: Theme.of(context).textTheme.displaySmall
+                          ?.copyWith(
+                              fontWeight: FontWeight.w900, color: context.palette.textInk),
                     ),
-                    IconButton.filledTonal(
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const SettingsScreen(),
-                        ),
-                      ),
-                      icon: const Icon(Icons.settings_rounded),
-                      tooltip: l10n.homeSettings,
+                    // Devanagari fallback glyphs hang below the Latin line box, so
+                    // keep a little air before the tagline.
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.appTagline,
+                      style: Theme.of(context).textTheme.bodyMedium
+                          ?.copyWith(color: context.palette.textMuted),
                     ),
                   ],
                 ),
               ),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
-                child: _GamesCompletedPill(count: totalGames, label: l10n.homeGamesCompleted),
+              IconButton.filledTonal(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const SettingsScreen(),
+                  ),
+                ),
+                icon: const Icon(Icons.settings_rounded),
+                tooltip: l10n.homeSettings,
               ),
-            ),
-            if (activeGame != null)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 4, 24, 4),
-                  child: _ContinueCard(
-                    saved: activeGame,
-                    l10n: l10n,
-                    onResume: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => GameScreen(
-                          globalLevel: activeGame.globalLevel,
-                          resume: true,
-                        ),
-                      ),
-                    ),
-                    onDismiss: () =>
-                        ref.read(activeGameProvider.notifier).clear(),
+            ],
+          ),
+        ),
+      ),
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
+          child: _GamesCompletedPill(count: totalGames, label: l10n.homeGamesCompleted),
+        ),
+      ),
+      if (activeGame != null)
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 4, 24, 4),
+            child: _ContinueCard(
+              saved: activeGame,
+              l10n: l10n,
+              onResume: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => GameScreen(
+                    globalLevel: activeGame.globalLevel,
+                    resume: true,
                   ),
                 ),
               ),
-            for (final tier in tiers)
-              _TierSliver(
-                tier: tier,
-                progress: progress,
-                isUnlocked: notifier.isUnlocked,
-                l10n: l10n,
-              ),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
-          ],
+              onDismiss: () =>
+                  ref.read(activeGameProvider.notifier).clear(),
+            ),
+          ),
+        ),
+      for (final tier in tiers)
+        _TierSliver(
+          tier: tier,
+          progress: progress,
+          isUnlocked: notifier.isUnlocked,
+          l10n: l10n,
+        ),
+      const SliverToBoxAdapter(child: SizedBox(height: 24)),
+    ];
+
+    return Scaffold(
+      body: SafeArea(
+        // The list stays full-width so the wheel scrolls anywhere over a
+        // desktop window; only its content is reined in to a phone-ish column,
+        // which keeps the level tiles tile-sized instead of blowing each one up
+        // to a fifth of a laptop screen.
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final gutter = contentGutter(constraints.maxWidth);
+            return CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: gutter,
+                  sliver: SliverMainAxisGroup(slivers: slivers),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

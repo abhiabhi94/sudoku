@@ -8,6 +8,7 @@
 //   node tool/screenshot.mjs [--levels 1,11,21] [--out shots] [--dark] [--lang hi]
 //                            [--onboarding] [--settings] [--dump] [--no-strict]
 //                            [--build-dir build/web] [--scale 2] [--port 0]
+//                            [--viewport 1440x900] [--keys 1,2,ArrowRight]
 //
 // Prereq: `flutter build web --debug --no-web-resources-cdn`
 //   debug   = all levels unlocked (same as the "Sudoku Testing" Android build)
@@ -50,6 +51,13 @@ const lang = args.lang ?? 'en';
 const scale = Number(args.scale ?? 2);
 const port = Number(args.port ?? 0);
 const strict = !args['no-strict'];
+// Phone by default; `--viewport WxH` renders the desktop layout instead (the
+// web build is also served on GitHub Pages, where people play it on a laptop).
+const viewport = parseViewport(args.viewport);
+const isPhone = viewport.width < 600;
+// Keys to press on the first opened level, so keyboard input can be smoke-tested
+// the same way taps are (e.g. `--keys 5,ArrowRight,Backspace`).
+const keys = String(args.keys ?? '').split(',').map((s) => s.trim()).filter(Boolean);
 
 if (!fs.existsSync(path.join(buildDir, 'index.html'))) {
   console.error(`No web build at ${buildDir}. Run: flutter build web --debug --no-web-resources-cdn`);
@@ -128,10 +136,10 @@ const prefs = {
 const problems = [];
 const browser = await chromium.launch();
 const context = await browser.newContext({
-  viewport: { width: 390, height: 844 },
+  viewport,
   deviceScaleFactor: scale,
-  isMobile: true,
-  hasTouch: true,
+  isMobile: isPhone,
+  hasTouch: isPhone,
   colorScheme: dark ? 'dark' : 'light',
   locale: lang === 'hi' ? 'hi-IN' : 'en-US',
 });
@@ -156,7 +164,10 @@ try {
 
   if (args.dump) console.log(await dumpSemantics(page));
 
-  const tag = `${lang}${dark ? '-dark' : ''}`;
+  // Non-phone runs carry their size in the filename so a desktop run doesn't
+  // overwrite the phone shot of the same screen.
+  const size = isPhone ? '' : `-${viewport.width}x${viewport.height}`;
+  const tag = `${lang}${dark ? '-dark' : ''}${size}`;
   await shoot(page, `${args.onboarding ? 'onboarding' : 'home'}-${tag}`);
 
   if (args.settings) {
@@ -176,6 +187,13 @@ try {
     await tile.click();
     await settle(page, 2500); // puzzle generation is synchronous on web (no isolates)
     await shoot(page, `level-${String(globalLevel).padStart(2, '0')}-${tag}`);
+    if (keys.length) {
+      for (const key of keys) {
+        await page.keyboard.press(key);
+        await settle(page, 250);
+      }
+      await shoot(page, `level-${String(globalLevel).padStart(2, '0')}-${tag}-keys`);
+    }
     await goBack(page);
   }
 } catch (e) {
@@ -230,6 +248,14 @@ async function shoot(page, name) {
   const file = path.join(outDir, `${name}.png`);
   await page.screenshot({ path: file });
   console.log('  wrote', path.relative(process.cwd(), file));
+}
+
+/// `--viewport 1440x900` -> { width, height }; defaults to a phone.
+function parseViewport(value) {
+  if (!value || value === true) return { width: 390, height: 844 };
+  const m = /^(\d+)x(\d+)$/.exec(String(value));
+  if (!m) { console.error(`Bad --viewport ${value}; expected WxH, e.g. 1440x900`); process.exit(2); }
+  return { width: Number(m[1]), height: Number(m[2]) };
 }
 
 function parseArgs(argv) {

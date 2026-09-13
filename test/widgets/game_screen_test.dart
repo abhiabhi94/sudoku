@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sudoku/engine/puzzle_factory.dart';
@@ -8,6 +9,7 @@ import 'package:sudoku/models/riddle.dart';
 import 'package:sudoku/providers/game_provider.dart';
 import 'package:sudoku/providers/riddle_rotation_provider.dart';
 import 'package:sudoku/screens/game_screen.dart';
+import 'package:sudoku/ui/layout.dart';
 import 'package:sudoku/widgets/cell_notes_panel.dart';
 import 'package:sudoku/widgets/drawing_canvas.dart';
 import 'package:sudoku/widgets/number_pad.dart';
@@ -15,6 +17,20 @@ import 'package:sudoku/widgets/sudoku_grid.dart';
 
 import '../support/fake_puzzle.dart';
 import '../support/pump_app.dart';
+
+/// The number-row key for [digit] (1-9).
+LogicalKeyboardKey _digitKey(int digit) => <LogicalKeyboardKey>[
+      LogicalKeyboardKey.digit0,
+      LogicalKeyboardKey.digit1,
+      LogicalKeyboardKey.digit2,
+      LogicalKeyboardKey.digit3,
+      LogicalKeyboardKey.digit4,
+      LogicalKeyboardKey.digit5,
+      LogicalKeyboardKey.digit6,
+      LogicalKeyboardKey.digit7,
+      LogicalKeyboardKey.digit8,
+      LogicalKeyboardKey.digit9,
+    ][digit];
 
 GameNotifier _testNotifier({List<int> blanks = const [0]}) {
   Future<GeneratedPuzzle> gen(int t, int l, int s) async =>
@@ -28,8 +44,11 @@ GameNotifier _testNotifier({List<int> blanks = const [0]}) {
 }
 
 Future<ProviderContainer> _loadGame(
-    WidgetTester tester, GameNotifier notifier) async {
-  await tester.binding.setSurfaceSize(const Size(500, 1100));
+  WidgetTester tester,
+  GameNotifier notifier, {
+  Size surface = const Size(500, 1100),
+}) async {
+  await tester.binding.setSurfaceSize(surface);
   addTearDown(() => tester.binding.setSurfaceSize(null));
   final container = await pumpApp(
     tester,
@@ -272,6 +291,120 @@ void main() {
       await tester.tap(find.text('Clear'));
       await tester.pump();
       expect(notifier.state.notesFor(0), isEmpty);
+    });
+  });
+
+  group('keyboard play', () {
+    testWidgets('a digit key places it in the selected cell', (tester) async {
+      // Two blanks, so placing one doesn't end the game mid-test.
+      final notifier = _testNotifier(blanks: const [0, 1]);
+      await _loadGame(tester, notifier);
+      notifier.selectCell(0);
+      await tester.pump();
+
+      await tester.sendKeyEvent(_digitKey(kFakeSolution[0]));
+      await tester.pump();
+
+      expect(notifier.state.board[0], kFakeSolution[0]);
+      expect(notifier.state.mistakes, 0);
+    });
+
+    testWidgets('backspace erases the selected cell', (tester) async {
+      final notifier = _testNotifier(blanks: const [0, 1]);
+      await _loadGame(tester, notifier);
+      notifier.selectCell(0);
+      notifier.inputDigit(kFakeSolution[0]);
+      await tester.pump();
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
+      await tester.pump();
+
+      expect(notifier.state.board[0], 0);
+    });
+
+    testWidgets('the arrow keys walk the selection', (tester) async {
+      final notifier = _testNotifier();
+      await _loadGame(tester, notifier);
+      notifier.selectCell(40); // row 4, col 4
+      await tester.pump();
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      await tester.pump();
+      expect(notifier.state.selectedIndex, 41);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
+      await tester.pump();
+      expect(notifier.state.selectedIndex, 32);
+    });
+
+    testWidgets('H opens the hint riddle', (tester) async {
+      final notifier = _testNotifier();
+      await _loadGame(tester, notifier);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyH);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TextField), findsOneWidget);
+    });
+
+    testWidgets('a shortcut with a modifier is left to the browser',
+        (tester) async {
+      final notifier = _testNotifier(blanks: const [0, 1]);
+      await _loadGame(tester, notifier);
+      notifier.selectCell(0);
+      await tester.pump();
+
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.metaLeft);
+      await tester.sendKeyEvent(_digitKey(kFakeSolution[0]));
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.metaLeft);
+      await tester.pump();
+
+      expect(notifier.state.board[0], 0);
+    });
+
+    test('an unmapped key falls back to the typed character', () {
+      KeyEvent typed(String? character) => KeyDownEvent(
+            physicalKey: PhysicalKeyboardKey.keyA,
+            logicalKey: LogicalKeyboardKey.keyA,
+            character: character,
+            timeStamp: Duration.zero,
+          );
+
+      expect(digitForKey(typed('7')), 7);
+      expect(digitForKey(typed('a')), isNull);
+      expect(digitForKey(typed(null)), isNull);
+    });
+  });
+
+  group('desktop-sized window', () {
+    testWidgets('keeps the board, notes panel and pad on screen',
+        (tester) async {
+      final notifier = _testNotifier();
+      await _loadGame(tester, notifier, surface: const Size(1440, 900));
+      notifier.selectCell(0); // empty and editable -> notes panel
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+      // The board stops growing well short of the window's width instead of
+      // pushing everything below it off the bottom.
+      expect(tester.getSize(find.byType(SudokuGrid)).width,
+          lessThanOrEqualTo(kMaxContentWidth));
+      expect(find.byType(CellNotesPanel), findsOneWidget);
+      expect(tester.getRect(find.byType(NumberPad)).bottom,
+          lessThanOrEqualTo(900.0));
+    });
+
+    testWidgets('a short window scrolls instead of overflowing',
+        (tester) async {
+      final notifier = _testNotifier();
+      await _loadGame(tester, notifier, surface: const Size(1440, 420));
+      notifier.selectCell(0);
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(NumberPad), findsOneWidget);
+      expect(tester.getRect(find.byType(NumberPad)).bottom,
+          lessThanOrEqualTo(420.0));
     });
   });
 }

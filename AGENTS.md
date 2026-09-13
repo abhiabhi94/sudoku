@@ -31,6 +31,7 @@ tool/coverage.sh 92             # coverage gate (fails under threshold; ~97% tod
 
 flutter build web --debug --no-web-resources-cdn   # web build (debug = all levels unlocked)
 node tool/screenshot.mjs --levels 1,11,21 --settings  # phone-viewport screenshots -> shots/
+node tool/screenshot.mjs --levels 1 --viewport 1440x900 --keys 5,ArrowRight  # desktop/keyboard
 
 flutter run                     # debug build = "Sudoku Testing", all levels unlocked
 flutter run --release           # release build = "Sudoku", locked progression
@@ -44,9 +45,12 @@ flutter build appbundle --release  # -> build/app/outputs/bundle/release/app-rel
 Claude Code on the web has no Android emulator (no KVM). The stand-in is the
 **web build + headless Chromium**: `tool/screenshot.mjs` serves `build/web`,
 drives the app (home, settings, any level, EN/HI, light/dark) at 390×844 and
-writes PNGs to `shots/`; it exits 1 on any Flutter exception, so it doubles
-as the CI smoke test (`.github/actions/web-smoke`, job "Web smoke &
-screenshots"). See `docs/cloud-dev.md` (porting checklist for other repos).
+writes PNGs to `shots/`; `--viewport WxH` renders the desktop layout instead
+and `--keys` presses keys on the opened level (both exercised in CI, since the
+web build is also played on a laptop via GitHub Pages). It exits 1 on any
+Flutter exception, so it doubles as the CI smoke test
+(`.github/actions/web-smoke`, job "Web smoke & screenshots"). See
+`docs/cloud-dev.md` (porting checklist for other repos).
 
 The web target doubles as a public build: `.github/workflows/pages.yml`
 deploys the release web app to GitHub Pages (https://abhiabhi94.github.io/sudoku/)

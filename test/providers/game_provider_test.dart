@@ -50,6 +50,54 @@ void main() {
     expect(n.state.errorCells, isEmpty);
   });
 
+  group('moveSelection', () {
+    test('walks the selection and clamps at the edges', () async {
+      final n = makeNotifier();
+      addTearDown(n.dispose);
+      await n.ready;
+
+      n.selectCell(40); // row 4, col 4
+      n.moveSelection(-1, 0);
+      expect(n.state.selectedIndex, 31);
+      n.moveSelection(1, 1);
+      expect(n.state.selectedIndex, 41);
+      n.moveSelection(0, -1);
+      expect(n.state.selectedIndex, 40);
+
+      n.selectCell(0);
+      n.moveSelection(-1, -1);
+      expect(n.state.selectedIndex, 0, reason: 'clamped at the top-left');
+      n.selectCell(80);
+      n.moveSelection(1, 1);
+      expect(n.state.selectedIndex, 80, reason: 'clamped at the bottom-right');
+    });
+
+    test('the first press with nothing selected lands on the first cell',
+        () async {
+      final n = makeNotifier();
+      addTearDown(n.dispose);
+      await n.ready;
+      expect(n.state.selectedIndex, -1);
+
+      n.moveSelection(1, 0);
+      expect(n.state.selectedIndex, 0);
+    });
+
+    test('does nothing while the game is not playing', () async {
+      final n = makeNotifier(blanks: kWrongBlanks);
+      addTearDown(n.dispose);
+      await n.ready;
+      n.selectCell(kWrongCell);
+      for (var i = 0; i < 4; i++) {
+        n.inputDigit(kWrongDigit);
+      }
+      expect(n.state.phase, GamePhase.lockedOut);
+
+      n.moveSelection(1, 0);
+      expect(n.state.selectedIndex, kWrongCell);
+    });
+  });
+
   test('a wrong digit records a mistake and marks the cell', () async {
     final n = makeNotifier(blanks: kWrongBlanks);
     addTearDown(n.dispose);

@@ -10,6 +10,7 @@ import 'providers/settings_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'services/audio_service.dart';
+import 'ui/layout.dart';
 import 'ui/theme.dart';
 
 Future<void> main() async {
@@ -66,6 +67,7 @@ class _SudokuAppState extends ConsumerState<SudokuApp>
     return MaterialApp(
       title: 'Sudoku',
       debugShowCheckedModeBanner: false,
+      scrollBehavior: const AppScrollBehavior(),
       theme: buildLightTheme(),
       darkTheme: buildDarkTheme(),
       themeMode: _themeModeFor(settings.themeChoice),
