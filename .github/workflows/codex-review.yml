@@ -1,8 +1,7 @@
-# Codex PR review for this repo. The logic lives in the reusable workflow
-# (codex-review-reusable.yml, called by path so a PR tests its own copy);
-# other repos call it as
-#   uses: abhiabhi94/sudoku/.github/workflows/codex-review-reusable.yml@main
-# Needs the `OPENAI_API_KEY` repository secret. Codex reads AGENTS.md itself.
+# Codex PR review. The logic lives in the account-wide reusable workflow in
+# abhiabhi94/.github (see its README for inputs); this file is the same in
+# every repo. Needs the `OPENAI_API_KEY` repository secret. Codex reads
+# AGENTS.md itself, so repo-specific review rules go there.
 name: Codex review
 
 on:
@@ -15,5 +14,5 @@ permissions:
 
 jobs:
   codex:
-    uses: ./.github/workflows/codex-review-reusable.yml
+    uses: abhiabhi94/.github/.github/workflows/codex-review-reusable.yml@main
     secrets: inherit
